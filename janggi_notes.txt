@@ -1,0 +1,147 @@
+------------------------------------------------------------------
+Janggi
+------------------------------------------------------------------
+Janggi, sometimes called Korean chess, is a strategy board game
+popular in Korea. The game was derived from xiangqi (Chinese
+chess) of China and is very similar to it, including the starting
+position of the pieces, and the 9×10 gameboard, but without the
+xiangqi "river" dividing the board horizontally in the middle.
+
+Janggi is played on a board nine lines wide by ten lines long.
+The game is sometimes fast paced due to the jumping cannons and
+the long-range elephants, but professional games most often last
+over 150 moves and so are typically slower than those of Western
+chess.
+------------------------------------------------------------------
+Board Description:
+------------------------------------------------------------------
+    90 intersections of 9 vertical files and 10 horizontal rows.
+
+    A palace is 3 lines by 3 lines (9 positions) in the centre of
+    their side of the board, against the black edge of the board.
+    An X runs through the center of the Palace such that there are
+    four diagonal lines outwards from the center.
+------------------------------------------------------------------
+Pieces
+------------------------------------------------------------------
+General:
+
+    Starts at the central intersection of the palace and can
+    NEVER leave the Palace.
+
+    Can move one step per turn along marked board lines
+    to any of the nine points within the palace.
+
+    By "marked board lines", we mean you can only jump
+    diagonally when there is a line allowing such a move.
+
+    We are ignoring the bikjang/xixangqi rules for this
+    version of the game - it is not illegal for generals to face
+    each other, and players not moving a general away when facing
+    the other general does NOT result in a draw.
+
+    If there is no move for the general to make without getting
+    into check or checkmate but safe to stand still, the person
+    can pass their turn.
+
+Guards (3 points):
+
+    Start to the left and right of the general on the first rank.
+
+    Move in the same way as the General (one space per time, along
+    the marked lines) and can also not leave the Palace.
+
+Horses (5 points):
+
+    Can move one step orthogonally then one step diagonally
+    outward, with no jumping through intervening pieces.
+
+    We are ignoring the possible transposing with adjacent
+    elephants during the initial board setup.
+
+Elephants (3 points):
+
+    Begin the game to the left and right of the guards.
+
+    They move one point orthogonally followed by two
+    points diagonally away from their starting point,
+    ending on the opposite corner of a 2x3 rectangle. Like
+    the horse, they cannot jump through intervening pieces.
+
+Chariots (13 points):
+
+    The chariots begin in the corners of the board.
+
+    Can move and capture in a straight line either horizontally
+    or vertically, AND can move along the diagonal lines
+    inside either Palace, but only in a straight line.
+
+Cannons (7 points):
+
+    Placed on the row behind the soldiers and directly in front
+    of the horses.
+
+    Requirement for moving that there must another piece
+    horizontally or vertically. The jump can be performed
+    over any distance provided that there is exactly one and
+    only one piece (friendly or non-friendly) anywhere between
+    the original position and the target position. The same
+    rules apply for them being able to capture pieces - there
+    must be one piece between the cannon and the piece to be
+    captured.
+
+    Additionally, they can move and capture along the diagonal
+    lines within the Palace, provided there is an intervening
+    piece in the center, meaning that this can only happen
+    if the cannon is at corner space in the Palace.
+
+    Cannons MUST jump in order to move AND capture.
+
+    Cannons CANNOT jump over other cannons, friendly or otherwise.
+
+    A cannon CANNOT capture another cannon.
+
+Soldiers (2 points):
+
+    Five total soldiers, placed on alternating points, one row
+    back from the center row.
+
+    They can move and capture one point either straight forwards
+    or sideways. They cannot move diagonally or backwards.
+
+    Once soldiers reach the end of the board, they may only
+    move sideways (no promotion)
+
+    Soldiers may also move one point diagonally forward within the
+    enemy palace (but still are not allowed to move backwards).
+------------------------------------------------------------------
+General Game Rules:
+------------------------------------------------------------------
+    The game is won by checkmating the opposing general.
+
+    Check is defined as a situation where if the player passed
+    their turn, their general would be captured on their
+    opponents next turn.
+
+    A stalemate is NOT a draw. If a player has no legal moves
+    available, they MUST pass their turn.
+
+    If there is no move for the general to make without getting
+    into check or checkmate but safe to stand still, the player
+    can voluntarily pass their turn.
+
+    Once neither player can move legally, or if neither player
+    can win due to their number of pieces remaining, the game
+    ends in a draw.
+------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
