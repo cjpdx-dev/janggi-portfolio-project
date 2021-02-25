@@ -1,0 +1,255 @@
+#
+# AUTHOR:           Chris Jacobs
+# PROJECT:          Janggi Portfolio Project
+# TIMELINE:         Due March 12 @ 2:59AM
+#
+# CREATION DATE:    2/25/2021
+# LAST EDITED:      2/25/2021
+# STATUS:           ACTIVE
+#
+# DESCRIPTION: This is a dev journal to plan and track the progress of my CS 162 portfolio project. The
+# goal of the project is design and implement a basic version of Janggi (see janggi_notes.txt for details).
+# My goal for this document is to (1) start the habit of development journaling and to develop a standard
+# format for myself that allows me the most flexibility and offers me the most readable and functional
+# notes (2) allows me to track the progress of the project through time, providing more detail than simply
+# reading my git commit messages and (3) displays "proof of original work" to anyone who might detect a false
+# positive when utilizing plagiarism detection software.
+#
+# IMPORTANT: Unlike the janggi_notes.txt file, this dev journal WILL NOT be shared with anyone else in the class
+# while the class is in session. It is for my own personal use.
+#
+# FORMAT: For each day and/or sprint, I will do a quick "sit down meeting" (note: NOT a "stand up meeting") before
+# coding. In this meeting, I will reflect on what was accomplished during the previous coding day and/or previous
+# sprint (referencing any end-of-day notes from the previous session). I will then plan the goals of the day and
+# from there the rest of the entry will be devoted to detailing any major issues or design decisions that I end up
+# making through the course of the day. I will then end with any notes/reminders that I want to leave myself for
+# the following session.
+#
+# NOTE: To anyone who happens to read this, I 100% understand if the entire concept of a dev journal seems cheesy, over
+# the top, and makes me come off as a toolish try-hard. With that said, the only reason I've ever been successful as a
+# student and as a programmer is because I've had to be insanely excessive at organizing myself. Without the type of
+# organization and forethought you're seeing here, I'm pretty dead in the water because I don't have that structure to
+# keep me focused and motivated. So, yeah, laugh at me all you want (I'll probably do the same when I come back and
+# read this, with more cringing), but at the end of the day, I'm just here to elevate my skills, with the goal of making
+# myself a better developer.
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 1/15 - 2/25/2021 - Tasks: Game Flow, Class Structure Design, Data Structure Design, Future Task Scheduling
+-----------------------------------------------------------------------------------------------------------------------
+SIT DOWN: Its the first day I've started this dev journal, so nothing to report here ;)
+
+Class Structure
+---------------------
+    class JanggiGame:
+        Description:
+        Data:
+        Methods:
+            JanggiGame.make_move(current_position, attempted_position)
+                - Returns True or False based on whether move fails or succeeds
+
+            JanggiGame.is_in_check(player_color)
+                - Returns True or False based on whether the player parameter is in check or not
+
+            JanggiGame.get_game_state()
+                - Returns 'UNFINISHED', 'RED_WON', or 'BLUE_WON'
+
+    class Move:
+        Description:
+            Is a move object necessary if we don't need to store the moves?
+            or is there some additional utility we might be able to get from it?
+            game.make_move
+        Data:
+        Methods:
+
+        class Reposition(Move):
+            ?
+
+        class Capture(Move):
+            ?
+
+    class Player:
+        Description:
+        Data:
+        Methods:
+
+    class Board:
+        Description:
+        Data:
+        Methods:
+            update_board()
+            display()
+
+    class Piece:
+        Description:
+        Data:
+        Methods:
+
+        class General(Piece):
+            Description:
+            Data:
+            Methods:
+
+        class Guard(Piece):
+            Description:
+            Data:
+            Methods:
+
+        class Horse(Piece):
+            Description:
+            Data:
+            Methods:
+
+        class Chariot(Piece):
+            Description:
+            Data:
+            Methods:
+
+        class Cannon(Piece):
+            Description:
+            Data:
+            Methods:
+
+        class Soldier(Piece):
+            Description:
+            Data:
+            Methods:
+
+    class Position:
+        Description:
+        Data:
+        Methods:
+
+
+Logical Flow of Game
+---------------------
+    Board setup:
+
+        1. We initialize an empty board, represented by an empty dict
+
+        2. We initialize Position objects for that board. Those position objects only have one field - a position
+        value represented by algebraic notation (a1, c2, etc). We then populate the dict with Position objects -
+        the key being the Position's notation (a str value) and the Value being the Position object itself.
+
+        3. We initialize two Player objects - one with _player_name = "BLUE" and one "RED"
+
+        4. Each player object generates its own 16 pieces.
+                Should the Player be tied to the Piece or Piece tied to the player? Or both?
+
+                Two mandatory methods are:
+
+                    make_move("old_pos", "new_pos")
+
+                        1. First step is to confirm if "old_pos" (1) exists (RET false if not) and (2) has
+                        the correct player on it (RET false if not).
+
+                            Here, it makes the most sense for a Piece object to be "stored inside" a Position object.
+
+
+                            That Piece has to be "assigned" to a Player, but only for the purpose of making it so
+                            only that player can control it. Thus, a Piece should could have a simple field declaring
+                            what player it is assigned to. But, that Piece could also be tied to the actual Player
+                            object that its associated with, which might provide more functionality. But I'm unsure
+                            if this would increase coupling and/or decrease modularity.
+
+                        2. Second step would be to determine if the new_pos (1) exists (RET false if not) and (2)
+                        if that position does not have a piece belonging to the current player (RET false if not).
+
+                        The third step would be to determine if the move is valid - here we would diverge
+                        in our decision tree based on if the move is "Reposition" or an "Attempted_Capture". Unsure
+                        if these should be separate Move objects (or if we're even going to be using a Move object at
+                        all).
+
+
+
+                    is_in_check("player_color")
+
+    Turn Procedure:
+
+    Post-Turn Procedure:
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 2/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 3/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 4/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 5/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 6/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 7/15 - 3/4/2021 - Tasks: Benchmark Evaluation and Restructuring, Completion of Halfway Progress Report
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 8/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 9/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 10/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 11/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 12/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 13/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 14/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+Sprint 15/15
+-----------------------------------------------------------------------------------------------------------------------
+
+
+
+
