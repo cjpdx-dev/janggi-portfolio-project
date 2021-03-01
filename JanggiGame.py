@@ -7,46 +7,140 @@
 #               for further details.
 #
 
+from JanggiDisplay import JanggiDisplay
+
+
 class JanggiGame:
 
     def __init__(self):
+        # init game state
+        self._game_state = "UNFINISHED"
+
+        # init players
+        self._player_1 = Player("RED")
+        self._player_2 = Player("BLUE")
+
+        # init game board
+        self._game_board = Board(self._player_1, self._player_2)
+
+        # init current player
+        self._player_1.set_taking_turn(True)
+        self._current_player = self._player_1
+
+    def set_game_state(self, game_state):
+        self._game_state = game_state
+
+    def get_game_state(self):
+        return self._game_state
+
+    def refresh_game_state(self):
         pass
+
+    def make_move(self, old_pos, new_pos):
+        pass
+        # check game board for old position data
+
+    def switch_turns(self):
+
+        if self._current_player is self._player_1:
+            self._current_player = self._player_2
+            self._player_1.set_taking_turn(False)
+            self._player_2.set_taking_turn(True)
+
+        elif self._current_player is self._player_2:
+            self._current_player = self._player_1
+            self._player_2.set_taking_turn(False)
+            self._player_1.set_taking_turn(True)
+        else:
+            print("No current player is set.")
+
 
 
 class Player:
 
-    def __init__(self):
-        pass
+    def __init__(self, color):
+        self._player_color = color
+
+        self._in_check = False
+        self._in_checkmate = False
+        self._taking_turn = False
+
+        self._player_pieces = []
+
+    # Player Name Methods
+    def get_player_color(self):
+        return self._player_color
+
+    # Turn Position Methods
+    def is_taking_turn(self):
+        return self._taking_turn
+
+    def set_taking_turn(self, turn_status):
+        self._taking_turn = turn_status
+
+    # In Check/Out of Check Methods
+    def is_in_check(self):
+        return self._in_check
+
+    def set_in_check(self):
+        self._in_check = True
+
+    def set_out_of_check(self):
+        self._in_check = False
 
 
 class Board:
 
-    def __init__(self):
-        pass
+    def __init__(self, player1: Player, player2: Player):
 
+        # rows 1-4 belong to red
+        self._initial_red_positions = []
+
+
+        # rows 10-7 belong to blue
+
+        pass
 
 class Position:
 
-    def __init__(self):
-        pass
+    def __init__(self, position_label):
+        self._pos_label = position_label
 
 
 class Piece:
 
-    def __init__(self):
-        pass
+    def __init__(self, player):
+        self._player = player
+
+
 
 
 class General(Piece):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, player):
+
+        super().__init__(player)
+
+        self._long_label = "General"
+        self._short_label = "GE"
+
+        self._blue_start_positions = ["e9"]
+        self._red_start_positions = ["e2"]
+
+        self._in_palace = True
+        self._confined_to_palace = True
 
 
 class Guard(Piece):
 
     def __init__(self):
         super().__init__()
+
+        self._blue_start_positions = ["d10", "f10"]
+        self._red_start_positions = ["d1", "f1"]
+
+        self._in_palace = True
+        self._confined_to_palace = True
 
 
 class Chariot(Piece):
@@ -79,55 +173,10 @@ class Soldier(Piece):
         super().__init__()
 
 
-class DisplayDriver:
-
-    def __init__(self):
-
-        self.line1 = "                                                            "
-        self.line2 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   BLUE: %s  "
-        self.line3 = "          ========================================          "
-        self.line4 = "       10 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 10       "
-        self.line5 = "          |             |   \  /   |             |          "
-        self.line6 = "        9 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 9        "
-        self.line7 = "          |             |   /  \   |             |          "
-        self.line8 = "        8 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 8        "
-        self.line9 = "          |             |----------|             |          "
-        self.line10 = "        7 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 7        "
-        self.line11 = "          |                                      |          "
-        self.line12 = "        6 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 6        "
-        self.line13 = "          |                                      |          "
-        self.line14 = "        5 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 5        "
-        self.line15 = "          |                                      |          "
-        self.line16 = "        4 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 4        "
-        self.line17 = "          |             |----------|             |          "
-        self.line18 = "        3 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 3        "
-        self.line19 = "          |             |   \  /   |             |          "
-        self.line20 = "        2 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 2        "
-        self.line21 = "          |             |   /  \   |             |          "
-        self.line22 = "        1 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 1        "
-        self.line23 = "          ========================================          "
-        self.line24 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   RED: %s   "
-        self.line25 = "                                                            "
-
-        self.board_rows = [self.line1, self.line2, self.line3, self.line4, self.line5, self.line6,
-                           self.line7, self.line8, self.line9, self.line10, self.line11, self.line12,
-                           self.line13, self.line14, self.line15, self.line16, self.line17, self.line18,
-                           self.line19, self.line20, self.line21, self.line22, self.line23, self.line24,
-                           self.line25]
-
-    def display_board(self, pieces):
-
-        i = 0
-        for row in self.board_rows:
-            if "%" in row:
-                print(row % tuple(pieces[i]))
-                i += 1
-            else:
-                print(row)
 
 
-display = DisplayDriver()
-all_placements = ["100"], \
+display = JanggiDisplay()
+test_placements = ["100"], \
                  ["CH", "EL", "HR", "GU", "**", "GU", "EL", "HR", "CH"],\
                  ["**", "**", "**", "**", "GE", "**", "**", "**", "**"],\
                  ["**", "CA", "**", "**", "**", "**", "**", "CA", "**"],\
@@ -140,7 +189,7 @@ all_placements = ["100"], \
                  ["CH", "EL", "HR", "GU", "**", "GU", "EL", "HR", "CH"],\
                  ["100"]
 
-display.display_board(all_placements)
+display.display_board(test_placements)
 
 
 

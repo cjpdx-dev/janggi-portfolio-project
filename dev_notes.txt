@@ -154,46 +154,70 @@ Logical Flow of Game
                         2. Second step would be to determine if the new_pos (1) exists (RET false if not) and (2)
                         if that position does not have a piece belonging to the current player (RET false if not).
 
-                        The third step would be to determine if the move is valid - here we would diverge
-                        in our decision tree based on if the move is "Reposition" or an "Attempted_Capture". Unsure
-                        if these should be separate Move objects (or if we're even going to be using a Move object at
-                        all).
-
+                        3. The third step would be to determine if the move is valid - here our decision tree would
+                        diverge based on if the move is "Reposition" or an "Attempted_Capture". Unsure if these should
+                        be separate Move objects (or if we're even going to be using a Move object at all).
 
 
                     is_in_check("player_color")
 
-    Turn Procedure:
+                        1. First step is to filter bad input
 
-    Post-Turn Procedure:
+                        2. Second step is to determine if the player is in check
+
+                            The primary method I can think of for determining if a player is in check is to just
+                            have a boolean field in a player object that we could check each time. But this would
+                            still involve a method like "check_if_player_is_in_check()" to be run after each player
+                            takes their move.
+
+                            So with that said, is there a more efficient way to implement determining a check
+                            situation? One thing to remember is that a player can't put themselves in check - so
+                            we would need to use a check_for_check() method after we solidify a move that the
+                            current player makes. So, if we were to have a move class, check_for_check() might
+                            make the most sense here. After all, the concept of "check" isn't a state that can
+                            only be associated with a player being in check - a Move is either a move that creates
+                            a check situation or doesn't create a check situation.
+
+                            So this lends itself to actually implementing a Move class. I like this because it
+                            feels like it will make the class design more modular, and it will actually give us
+                            more space to expand the game so that we can track moves over the course of the game
+                            or even provide functionality to reverse a move.
+
+                Conclusion: I don't really have a conclusion for this yet. To me it makes the most sense to have a
+
+    Turn Procedure (Ideas):
+
+    Post-Turn Procedure (Ideas):
 
 
-Example Board:
+Example Boards:
 
 
-           a   b   c   d   ee   f   g   h   i   BLUE: 100
-        ========================================
-     10 |--CH--HR--EL-|GU\-**-/GU|-HR--EL--CH--| 10
-        |             |   \  /   |             |
-      9 |--**--**--**-|**--GE--**|-**--**--**--| 9
-        |             |   /  \   |             |
-      8 |--**--CA--**-|**/-**-\**|-**--CA--**--| 8
-        |             |----------|             |
-      7 |--SO--**--SO--**--SO--**--SO--**--SO--| 7
-        |                                      |
-      6 |--**--**--**--**--**--**--**--**--**--| 6
-        |                                      |
-      5 |--**--**--**--**--**--**--**--**--**--| 5
-        |                                      |
-      4 |--SO--**--SO--**--SO--**--SO--**--SO--| 4
-        |             |----------|             |
-      3 |--**--CA--**-|**\-**-/**|-**--CA--**--| 3
-        |             |   \  /   |             |
-      2 |--**--**--**-|**--GE--**|-**--**--**--| 2
-        |             |   /  \   |             |
-      1 |--CH--EL--HR-|GU/-**-\GU|-EL--HR--CH--| 1
-        ========================================
-           a   b   c   d   ee   f   g   h   i   RED: 100
+       a   b   c   d   ee   f   g   h   i   BLUE: 100
+    ========================================
+ 10 |--CH--HR--EL-|GU\-**-/GU|-HR--EL--CH--| 10
+    |             |   \  /   |             |
+  9 |--**--**--**-|**--GE--**|-**--**--**--| 9
+    |             |   /  \   |             |
+  8 |--**--CA--**-|**/-**-\**|-**--CA--**--| 8
+    |             |----------|             |
+  7 |--SO--**--SO--**--SO--**--SO--**--SO--| 7
+    |                                      |
+  6 |--**--**--**--**--**--**--**--**--**--| 6
+    |                                      |
+  5 |--**--**--**--**--**--**--**--**--**--| 5
+    |                                      |
+  4 |--SO--**--SO--**--SO--**--SO--**--SO--| 4
+    |             |----------|             |
+  3 |--**--CA--**-|**\-**-/**|-**--CA--**--| 3
+    |             |   \  /   |             |
+  2 |--**--**--**-|**--GE--**|-**--**--**--| 2
+    |             |   /  \   |             |
+  1 |--CH--EL--HR-|GU/-**-\GU|-EL--HR--CH--| 1
+    ========================================
+       a   b   c   d   ee   f   g   h   i   RED: 100
+
+Boards in string format
 
 line1 =  "                                                            "
 line2 =  "             a   b   c   d   ee   f   g   h   i   RED: 100  "
@@ -221,70 +245,77 @@ line23 = "          ========================================          "
 line24 = "             a   b   c   d   ee   f   g   h   i   BLUE: 100 "
 line25 = "                                                            "
 
-        self.line1 = "                                                            "
-        self.line2 = "             a   b   c   d   ee   f   g   h   i   RED: {}  "
-        self.line3 = "          ========================================          "
-        self.line4 = "        1 |--{}--{}--{}-|{}/-{}-\{}|-{}--{}--{}--| 1        "
-        self.line5 = "          |             |   /  \   |             |          "
-        self.line6 = "        2 |--{}--{}--{}-|{}--{}--{}|-{}--{}--{}--| 2        "
-        self.line7 = "          |             |   \  /   |             |          "
-        self.line8 = "        3 |--{}--{}--{}-|{}\-{}-/{}|-{}--{}--{}--| 3        "
-        self.line9 = "          |             |----------|             |          "
-        self.line10 = "        4 |--{}--{}--{}--{}--{}--{}--{}--{}--{}--| 4        "
-        self.line11 = "          |                                      |          "
-        self.line12 = "        5 |--{}--{}--{}--{}--{}--{}--{}--{}--{}--| 5        "
-        self.line13 = "          |                                      |          "
-        self.line14 = "        6 |--{}--{}--{}--{}--{}--{}--{}--{}--{}--| 6        "
-        self.line15 = "          |                                      |          "
-        self.line16 = "        7 |--{}--{}--{}--{}--{}--{}--{}--{}--{}--| 7        "
-        self.line17 = "          |             |----------|             |          "
-        self.line18 = "        8 |--{}--{}--{}-|{}/-{}-\{}|-{}--{}--{}--| 8        "
-        self.line19 = "          |             |   /  \   |             |          "
-        self.line20 = "        9 |--{}--{}--{}-|{}--{}--{}|-{}--{}--{}--| 9        "
-        self.line21 = "          |             |   \  /   |             |          "
-        self.line22 = "       10 |--{}--{}--{}-|{}\-{}-/{}|-{}--{}--{}--| 10       "
-        self.line23 = "          ========================================          "
-        self.line24 = "             a   b   c   d   ee   f   g   h   i   BLUE: {} ".format(100)
-        self.line25 = "                                                            "
+Boards in string format with .format
 
-        self.line1 = "                                                            "
-        self.line2 = "             a   b   c   d   ee   f   g   h   i   RED: %s  "
-        self.line3 = "          ========================================          "
-        self.line4 = "        1 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 1        "
-        self.line5 = "          |             |   /  \   |             |          "
-        self.line6 = "        2 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 2        "
-        self.line7 = "          |             |   \  /   |             |          "
-        self.line8 = "        3 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 3        "
-        self.line9 = "          |             |----------|             |          "
-        self.line10 = "        4 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 4        "
-        self.line11 = "          |                                      |          "
-        self.line12 = "        5 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 5        "
-        self.line13 = "          |                                      |          "
-        self.line14 = "        6 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 6        "
-        self.line15 = "          |                                      |          "
-        self.line16 = "        7 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 7        "
-        self.line17 = "          |             |----------|             |          "
-        self.line18 = "        8 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 8        "
-        self.line19 = "          |             |   /  \   |             |          "
-        self.line20 = "        9 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 9        "
-        self.line21 = "          |             |   \  /   |             |          "
-        self.line22 = "       10 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 10       "
-        self.line23 = "          ========================================          "
-        self.line24 = "             a   b   c   d   ee   f   g   h   i   BLUE: %s  "
-        self.line25 = "                                                            "
+self.line1 = "                                                            "
+self.line2 = "             a   b   c   d   ee   f   g   h   i   RED: {}   "
+self.line3 = "          ========================================          "
+self.line4 = "        1 |--{}--{}--{}-|{}/-{}-\{}|-{}--{}--{}--| 1        "
+self.line5 = "          |             |   /  \   |             |          "
+self.line6 = "        2 |--{}--{}--{}-|{}--{}--{}|-{}--{}--{}--| 2        "
+self.line7 = "          |             |   \  /   |             |          "
+self.line8 = "        3 |--{}--{}--{}-|{}\-{}-/{}|-{}--{}--{}--| 3        "
+self.line9 = "          |             |----------|             |          "
+self.line10 = "        4 |--{}--{}--{}--{}--{}--{}--{}--{}--{}--| 4        "
+self.line11 = "          |                                      |          "
+self.line12 = "        5 |--{}--{}--{}--{}--{}--{}--{}--{}--{}--| 5        "
+self.line13 = "          |                                      |          "
+self.line14 = "        6 |--{}--{}--{}--{}--{}--{}--{}--{}--{}--| 6        "
+self.line15 = "          |                                      |          "
+self.line16 = "        7 |--{}--{}--{}--{}--{}--{}--{}--{}--{}--| 7        "
+self.line17 = "          |             |----------|             |          "
+self.line18 = "        8 |--{}--{}--{}-|{}/-{}-\{}|-{}--{}--{}--| 8        "
+self.line19 = "          |             |   /  \   |             |          "
+self.line20 = "        9 |--{}--{}--{}-|{}--{}--{}|-{}--{}--{}--| 9        "
+self.line21 = "          |             |   \  /   |             |          "
+self.line22 = "       10 |--{}--{}--{}-|{}\-{}-/{}|-{}--{}--{}--| 10       "
+self.line23 = "          ========================================          "
+self.line24 = "             a   b   c   d   ee   f   g   h   i   BLUE: {}  "
+self.line25 = "                                                            "
 
+String format with %s placeholders
 
+self.line1 = "                                                            "
+self.line2 = "             a   b   c   d   ee   f   g   h   i   RED: %s  "
+self.line3 = "          ========================================          "
+self.line4 = "        1 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 1        "
+self.line5 = "          |             |   /  \   |             |          "
+self.line6 = "        2 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 2        "
+self.line7 = "          |             |   \  /   |             |          "
+self.line8 = "        3 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 3        "
+self.line9 = "          |             |----------|             |          "
+self.line10 = "        4 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 4        "
+self.line11 = "          |                                      |          "
+self.line12 = "        5 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 5        "
+self.line13 = "          |                                      |          "
+self.line14 = "        6 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 6        "
+self.line15 = "          |                                      |          "
+self.line16 = "        7 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 7        "
+self.line17 = "          |             |----------|             |          "
+self.line18 = "        8 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 8        "
+self.line19 = "          |             |   /  \   |             |          "
+self.line20 = "        9 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 9        "
+self.line21 = "          |             |   \  /   |             |          "
+self.line22 = "       10 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 10       "
+self.line23 = "          ========================================          "
+self.line24 = "             a   b   c   d   ee   f   g   h   i   BLUE: %s  "
+self.line25 = "                                                            "
+
+Left off on 2/25 - still need to finish the logical flow of the game section as well as planning out the rest of the
+sprints before we can move on to Sprint 2. Unfortunately need to prioritize CS 271 work since I'm using a grace day
+and the assignment needs to be done by tonight, so we likely won't start on this again till 3/1 but I have a few more
+hours till my Vyvance is fully kicked in so we're going to work on this for 2.5 hours.
 
 
 
 -----------------------------------------------------------------------------------------------------------------------
-Sprint 2/15
+Sprint 2/15 - 3/2/2021 - Player Init, Board Init with Piece Init/Generation
 -----------------------------------------------------------------------------------------------------------------------
 
 
 
 -----------------------------------------------------------------------------------------------------------------------
-Sprint 3/15
+Sprint 3/15: 3/3/2021
 -----------------------------------------------------------------------------------------------------------------------
 
 
