@@ -1,0 +1,78 @@
+You won't receive feedback on the Halfway Progress Report before the Portfolio Project is due.  The purpose of the
+Halfway Progress Report is to give you a little direction on breaking things down, making a plan, and getting started.
+If you have any specific questions about your plan, please feel free to ask a TA.
+
+You may not share and compare your submission for this assignment until after the due date for the Portfolio Project
+has passed.
+
+You will submit your progress report for the Portfolio Project here in Canvas.   It should include the following:
+
+    Code declaring each of the classes in your project, with a descriptive docstring for each, which should include
+    description of its responsibilities and what other classes it will need to communicate with and why.
+
+    Code declaring  each method of each class, with a descriptive docstring for each, which should include description
+    of its purpose, and also of its parameters (besides self) and return value (if any).  The methods do not have to be
+    implemented and you can put the "pass" keyword in them.  For example:
+
+def make_move(self, from_location, to_location)
+    """ descriptive docstring """
+    pass
+
+    Detailed text descriptions of how your code will handle the following scenarios. This can be either as a separate
+    block of comments in your program file or a separate PDF file. If you are putting this in your program file, please
+    indicate it clearly as "DETAILED TEXT DESCRIPTIONS OF HOW TO HANDLE THE SCENARIOS"
+
+        Initializing the board
+        Determining how to represent pieces  at a given location on the board
+        Determining how to validate a given move according to the rules for each piece, turn taking and other game rules.
+        Modifying the board state after each move.
+        Determining how to track which player's turn it is to play right now.
+        Determining how to detect the checkmate scenario.
+        Determining which player has won and also figuring out when to check that.
+
+Your scenario descriptions should be high-level (not code-level) pseudocode for all the methods involved, how they're
+interacting, and what they're each doing.  They should convey detailed actionable plans for the given scenarios.
+
+
+
+In CS161, we had a module called Exploration: Problem Solving that suggested the following general approach to doing an
+assignment:
+
+    Understand the requirements
+    Design tests
+    Outline your approach
+    Translate your plan into code
+    Run your tests
+    Debug your code
+    Reflect on your process
+
+Here we are asking you to turn in part of step 3 - Outline your approach.  In this case we’re not requiring code-level
+pseudocode – it can be a step above that, but your descriptions still needs to be detailed and actionable.
+
+Remember the stepwise refinement method? You can use that method again here. Before, we used the concept of painting a
+house as an example for how to outline your approach. Let’s consider an assignment that asks you to write a program that
+ plays tic-tac-toe, and one of the scenarios is recognizing when a winning configuration has been reached.
+
+First, we start by writing down the top-level task:
+
+    Recognize a win in tic-tac-toe
+
+Breaking down this task into smaller chunks we might get:
+
+    Look for horizontal wins
+    Look for vertical wins
+    Look for diagonal wins
+
+This is a good start, but it isn’t really detailed or actionable yet. If we refine what we have again:
+
+    Iterate across all rows to see if any row has the same symbol in each square
+    Iterate across all columns to see if any column has the same symbol in each square
+    Check both diagonals to see if they have the same symbol in each square. For one diagonal, the row and column
+    indices would count up together.  For the other diagonal, one would count up while the other counts down.
+
+Now we have a more concrete idea of the approach we’re taking.  At this point we can easily continue refining the
+pseudocode down to code-level.  Notice that these last three bullet points are somewhat distinct subtasks that could
+potentially be partitioned off into separate helper functions that are called by the higher-level function.  You might
+not decide to do that for something as simple as tic-tac-toe, but if you had to get five in a row on larger board, for
+example, then the additional modularization would probably make it easier for you (and others) to think about how the
+whole thing works.
