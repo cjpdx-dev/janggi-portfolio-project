@@ -7,7 +7,8 @@
 #               for further details.
 #
 
-from JanggiDisplay import JanggiDisplay
+from JanggiDisplay import JanggiDisplay         # optional import if/when we want to display
+                                                # the CLI game board
 
 
 class JanggiGame:
@@ -21,13 +22,21 @@ class JanggiGame:
 
         self._game_state = "UNFINISHED"                             # Initialize the game state
 
-        self._player_1 = Player("BLUE")                              # Initialize the players
+        self._player_1 = Player("BLUE")                             # Initialize the players
         self._player_2 = Player("RED")
-
-        self._player_1.set_taking_turn(True)                        # Assign _player_1 to be the current player
-        self._current_player = self._player_1
+        self._current_player = None
 
         self._game_board = Board(self._player_1, self._player_2)    # Initialize the game board
+
+        self.start_game()
+
+    def start_game(self):
+        """
+        Starts the game by setting _player_1
+        """
+        self._current_player = self._player_1
+        self._player_1.set_taking_turn(True)
+
 
     def make_move(self, old_pos: str, new_pos: str) -> bool:
         """
@@ -40,25 +49,30 @@ class JanggiGame:
         """
         pass
 
-    def refresh_game_state(self):
-        pass
-
     def is_in_check(self, player_color: str) -> bool:
-        pass
+        if player_color == "BLUE":
+            return self._player_1.is_in_check()
+        elif player_color == "RED":
+            return self._player_2.is_in_check()
+        else:
+            print("ERROR: Invalid player color was passed to function JanggiGame.is_in_check()")
 
     def switch_turns(self):
         pass
 
-    def set_game_state(self, game_state):
+    def refresh_game_state(self):
+        pass
+
+    def set_game_state(self, game_state: str):
         self._game_state = game_state
 
-    def get_game_state(self):
+    def get_game_state(self) -> str:
         return self._game_state
 
 
 class Player:
 
-    def __init__(self, color):
+    def __init__(self, color: str):
         self._player_color = color
 
         self._in_check = False
@@ -66,110 +80,216 @@ class Player:
         self._taking_turn = False
 
         self._player_pieces = []
+        self.generate_pieces()
 
-    # Player Name Methods
-    def get_player_color(self):
+    def generate_pieces(self):
+        """
+        Generates the all necessary Piece objects to start the game and stores each Piece object
+        in the list self._player_pieces
+        """
+        pass
+
+    # Player Info Methods
+    def get_player_color(self) -> str:
+        """ Gets the player color """
         return self._player_color
 
-    # Turn Position Methods
-    def is_taking_turn(self):
+    # Turn Functions
+    def is_taking_turn(self) -> bool:
+        """ Returns the bool value that represents if the player is currently taking a turn or not"""
         return self._taking_turn
 
-    def set_taking_turn(self, turn_status):
+    def set_taking_turn(self, turn_status: bool):
+        """ Sets the turn status to either True (player currently taking turn) or False (turn is over)"""
         self._taking_turn = turn_status
 
-    # In Check/Out of Check Methods
-    def is_in_check(self):
+    # Check Functions
+    def is_in_check(self) -> bool:
+        """ Returns whether the player is currently in check """
         return self._in_check
 
-    def set_in_check(self):
-        self._in_check = True
+    def set_check_status(self, check_state: bool):
+        self._in_check = check_state
 
-    def set_out_of_check(self):
-        self._in_check = False
+    # Checkmate Functions
+    def is_in_checkmate(self) -> bool:
+        return self._in_checkmate
+
+    def set_checkmate_status(self, checkmate_status: bool):
+        self._in_checkmate = checkmate_status
 
 
 class Board:
+    """
+
+    """
 
     def __init__(self, player1: Player, player2: Player):
 
-        # rows 1-4 belong to red
-        self._initial_red_positions = (0, 0, )
+        self._initial_red_positions = ()
+        self._initial_blue_positions = ()
 
+        self._red_palace_positions = ((4, 1), (5, 1), (6, 1),
+                                      (4, 2), (5, 2), (6, 2),
+                                      (4, 3), (5, 3), (6, 3))
 
-        # rows 10-7 belong to blue
+        self._blue_palace_positions = ((4, 10), (5, 10), (6, 10),
+                                       (4, 9), (5, 9), (6, 9),
+                                       (4, 8), (5, 8), (6, 8))
 
         pass
 
     def populate_positions(self):
         pass
 
+    def get_red_palace_positions(self):
+        return self._red_palace_positions
 
-class Position:
+    def get_blue_palace_positions(self):
+        return self._blue_palace_positions
 
-    def __init__(self, position_label):
-        self._pos_label = position_label
+    def display_board(self):
+        display = JanggiDisplay()
+        display.draw(self.get_board_display_data())
+
+    @staticmethod
+    def get_board_display_data(self):
+        return []
+
+    @staticmethod
+    def display_test_board(self):
+        display = JanggiDisplay()
+        display.test_board()
+
+
+class Position(Board):
+    """
+
+    """
+
+    def __init__(self, xy_position: tuple):
+        super().__init__(xy_position)
+
+        self._xy_pos = xy_position
+
+        self._is_palace_position = self.check_if_palace_position()
+
+    def check_if_palace_position(self):
+        if self._xy_pos in self.get_blue_palace_positions():
+            return True
+
+        elif self._xy_pos in self.get_red_palace_positions():
+            return True
+
+        else:
+            return False
 
 
 class Piece:
 
-    def __init__(self, player):
-        self._player = player
+    def __init__(self, player: Player, label: str):
+        self._controlling_player = player
+        self._label = label
+
+        self._red_start_positions = ((), ())
+        self._blue_start_positions = ((), ())
+
+        self._in_palace = None
+        self._confined_to_palace = None
+        self._possible_moves = ()
+
+        # unsure as to whether we will need these fields or not
+        self._in_danger = None
+        self._captured = None
+
+    def get_player(self) -> Player:
+        """ Returns the Player object that the piece is controlled by. """
+        return self._controlling_player
+
+    def get_label(self) -> str:
+        """ Returns the string label that identifies the piece type. """
+        return self._label
+
+    def get_starting_positions(self) -> tuple:
+        """
+        Returns the starting positions for the piece, based on the piece's color ("BLUE" or "RED")
+        :return: A tuple of tuples. If the piece is a General, the second tuple will be empty.
+        """
+        if self._controlling_player.get_player_color() == "BLUE":
+            return self._blue_start_positions
+
+        elif self._controlling_player.get_player_color() == "RED":
+            return self._blue_start_positions
+        else:
+            raise Exception
+
+    def
 
 
 class General(Piece):
 
-    def __init__(self, player):
+    def __init__(self, player, label):
 
-        super().__init__(player)
+        super().__init__(player, label)
 
-        self._long_label = "General"
-        self._short_label = "GE"
+        self._label = label
 
-        self._red_start_positions = ["e2"]
-        self._blue_start_positions = ["e9"]
+        # start positions in (x,y) notation
+        self._red_start_positions = ((5, 2), ())
+        self._blue_start_positions = ((5, 9), ())
 
         self._in_palace = True
         self._confined_to_palace = True
+        self._possible_moves = ()
 
 
 class Guard(Piece):
 
-    def __init__(self, player):
-        super().__init__(player)
+    def __init__(self, player, label):
+        super().__init__(player, label)
 
-        self._long_label = "Guard"
-        self._short_label = "GU"
+        self._label = label
+        self._points = 3
 
-        self._red_start_positions = ((3, 0), (5, 0))
-        self._blue_start_positions = ("d10", "f10")
+        self._red_start_positions = ((4, 1), (6, 1))
+        self._blue_start_positions = ((4, 10), (6, 10))
 
         self._in_palace = True
         self._confined_to_palace = True
+        self._possible_moves = ()
 
 
 class Chariot(Piece):
 
-    def __init__(self, player):
-        super().__init__(player)
+    def __init__(self, player, label):
+        super().__init__(player, label)
 
-        self._long_label = ""
-        self._short_label = ""
+        self._label = label
+        self._points = 13
 
         self._red_start_positions = []
         self._blue_start_positions = []
 
+        # _in_palace will be important for other pieces as they move to and from the palace, because being in the
+        # palace determines which moves are possible (i.e. for pieces where diagonal moves are not possible, being
+        # in the palace allows for diagonal movement).
+
         self._in_palace = False
+
+        # _confined_to_palace will be important for the General and for Guards - when checking an attempted move from
+        # a Guard or General, we can check if the piece is confined to the palace, determine if the new_pos is a
+        # Palace position, and invalidate the move right then and there
         self._confined_to_palace = False
+        self._possible_moves = ()
 
 
 class Horse(Piece):
 
-    def __init__(self, player):
-        super().__init__(player)
+    def __init__(self, player, label):
+        super().__init__(player, label)
 
-        self._long_label = ""
-        self._short_label = ""
+        self._label = label
+        self._points = 5
 
         self._red_start_positions = []
         self._blue_start_positions = []
@@ -216,72 +336,47 @@ class Horse(Piece):
 
 class Elephant(Piece):
 
-    def __init__(self, player):
-        super().__init__(player)
+    def __init__(self, player, label):
+        super().__init__(player, label)
 
-        self._long_label = ""
-        self._short_label = ""
+        self._label = label
+        self._points = 3
 
         self._red_start_positions = []
         self._blue_start_positions = []
 
         self._in_palace = False
         self._confined_to_palace = False
-
+        self._possible_moves = ()
 
 
 class Cannon(Piece):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, player, label):
+        super().__init__(player, label)
 
-        self._long_label = ""
-        self._short_label = ""
+        self._label = label
+        self._points = 7
 
         self._red_start_positions = []
         self._blue_start_positions = []
 
         self._in_palace = False
         self._confined_to_palace = False
+        self._possible_moves = ()
 
 
 class Soldier(Piece):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, player, label):
+        super().__init__(player, label)
 
-        self._long_label = ""
-        self._short_label = ""
+        self._label = label
+        self._points = 2
 
         self._red_start_positions = []
         self._blue_start_positions = []
 
         self._in_palace = False
         self._confined_to_palace = False
-
-
-display = JanggiDisplay()
-
-test_placements = ["100"], \
-                 ["CH", "EL", "HR", "GU", "**", "GU", "EL", "HR", "CH"],\
-                 ["**", "**", "**", "**", "GE", "**", "**", "**", "**"],\
-                 ["**", "CA", "**", "**", "**", "**", "**", "CA", "**"],\
-                 ["SO", "**", "SO", "**", "SO", "**", "SO", "**", "SO"],\
-                 ["**", "**", "**", "**", "**", "**", "**", "**", "**"],\
-                 ["**", "**", "**", "**", "**", "**", "**", "**", "**"],\
-                 ["SO", "**", "SO", "**", "SO", "**", "SO", "**", "SO"],\
-                 ["**", "CA", "**", "**", "**", "**", "**", "CA", "**"],\
-                 ["**", "**", "**", "**", "GE", "**", "**", "**", "**"],\
-                 ["CH", "EL", "HR", "GU", "**", "GU", "EL", "HR", "CH"],\
-                 ["100"]
-
-display.display_board(test_placements)
-
-
-
-
-
-
-
-
-
+        self._possible_moves = ()

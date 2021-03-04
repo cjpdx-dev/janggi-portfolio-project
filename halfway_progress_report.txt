@@ -33,8 +33,6 @@ def make_move(self, from_location, to_location)
 Your scenario descriptions should be high-level (not code-level) pseudocode for all the methods involved, how they're
 interacting, and what they're each doing.  They should convey detailed actionable plans for the given scenarios.
 
-
-
 In CS161, we had a module called Exploration: Problem Solving that suggested the following general approach to doing an
 assignment:
 

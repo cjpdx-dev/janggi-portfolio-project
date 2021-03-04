@@ -1,7 +1,8 @@
 #
 # Author: Chris Jacobs
 # Date: 3/1/2021
-# Description: A class for creating the CLI display for a Janggi game board
+# Description: A class for creating the CLI display for a Janggi game board.
+# This class and the code that utilizes it in JanggiGame.py will be disabled in the final submission of the project.
 #
 
 class JanggiDisplay:
@@ -9,29 +10,29 @@ class JanggiDisplay:
     def __init__(self):
 
         self.line1 = "                                                            "
-        self.line2 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   BLUE: %s  "
+        self.line2 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   RED : %s  "
         self.line3 = "          ========================================          "
-        self.line4 = "       10 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 10       "
+        self.line4 = "        1 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 1        "
         self.line5 = "          |             |   \  /   |             |          "
-        self.line6 = "        9 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 9        "
+        self.line6 = "        2 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 2        "
         self.line7 = "          |             |   /  \   |             |          "
-        self.line8 = "        8 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 8        "
+        self.line8 = "        3 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 3        "
         self.line9 = "          |                                      |          "
-        self.line10 = "        7 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 7        "
+        self.line10 = "        4 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 4        "
         self.line11 = "          |                                      |          "
-        self.line12 = "        6 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 6        "
+        self.line12 = "        5 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 5        "
         self.line13 = "          |                                      |          "
-        self.line14 = "        5 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 5        "
+        self.line14 = "        6 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 6        "
         self.line15 = "          |                                      |          "
-        self.line16 = "        4 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 4        "
+        self.line16 = "        7 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 7        "
         self.line17 = "          |                                      |          "
-        self.line18 = "        3 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 3        "
+        self.line18 = "        8 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 8        "
         self.line19 = "          |             |   \  /   |             |          "
-        self.line20 = "        2 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 2        "
+        self.line20 = "        9 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 9        "
         self.line21 = "          |             |   /  \   |             |          "
-        self.line22 = "        1 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 1        "
+        self.line22 = "       10 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 10       "
         self.line23 = "          ========================================          "
-        self.line24 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   RED: %s   "
+        self.line24 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   BLUE: %s  "
         self.line25 = "                                                            "
 
         self.board_rows = [self.line1, self.line2, self.line3, self.line4, self.line5, self.line6,
@@ -40,7 +41,7 @@ class JanggiDisplay:
                            self.line19, self.line20, self.line21, self.line22, self.line23, self.line24,
                            self.line25]
 
-    def display_board(self, current_board):
+    def draw(self, current_board):
 
         i = 0
         for row in self.board_rows:
@@ -50,10 +51,27 @@ class JanggiDisplay:
             else:
                 print(row)
 
+    def test_board(self):
+
+        test_placements = ["100"], \
+                          ["CH", "HR", "EL", "GU", "**", "GU", "HR", "EL", "CH"], \
+                          ["**", "**", "**", "**", "GE", "**", "**", "**", "**"], \
+                          ["**", "CA", "**", "**", "**", "**", "**", "CA", "**"], \
+                          ["SO", "**", "SO", "**", "SO", "**", "SO", "**", "SO"], \
+                          ["**", "**", "**", "**", "**", "**", "**", "**", "**"], \
+                          ["**", "**", "**", "**", "**", "**", "**", "**", "**"], \
+                          ["SO", "**", "SO", "**", "SO", "**", "SO", "**", "SO"], \
+                          ["**", "CA", "**", "**", "**", "**", "**", "CA", "**"], \
+                          ["**", "**", "**", "**", "GE", "**", "**", "**", "**"], \
+                          ["CH", "EL", "HR", "GU", "**", "GU", "EL", "HR", "CH"], \
+                          ["100"]
+
+        self.draw(test_placements)
+
 
 if __name__ == "__main__":
-    print("JanggiDisplay.py is being run directly")
+    print("JanggiDisplay.py is being run directly: displaying sample test board.")
     display = JanggiDisplay()
-    display.display_board()
+    display.test_board()
 else:
     print("JanggiDisplay.py is being imported into another module")
