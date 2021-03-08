@@ -7,10 +7,11 @@
 #               for further details.
 #
 
-# from JanggiDisplay import JanggiDisplay         # optional import if/when we want to display
-#                                                 # the CLI game board
+from JanggiDisplay import JanggiDisplay         # optional import if/when we want to display
+                                                # the CLI game board
 
 from JanggiExceptions import *
+
 
 class JanggiGame:
     """
@@ -28,6 +29,7 @@ class JanggiGame:
         self._current_player = None
 
         self._game_board = Board(self._player_1, self._player_2)    # Initialize the game board
+        self._display = JanggiDisplay()
         self.start_game()
 
     def start_game(self):
@@ -41,6 +43,7 @@ class JanggiGame:
         # Not sure if we need to have a player object knowing that it is the current player
         # but it may be helpful later when we are doing movement validation
         self._player_1.set_taking_turn(True)
+        # self.display_board()
 
     def make_move(self, old_pos: str, new_pos: str) -> bool:
         """
@@ -138,6 +141,38 @@ class JanggiGame:
         else:
             print("ERROR: Attempted to switch turns but _current_player is set to None")
 
+    # Display Functions
+
+    def display_board(self):
+        self._display.draw(self.get_drawable_board_data())
+
+    def get_drawable_board_data(self):
+        drawable_data = [[str(self._player_2.get_points())]]
+
+        for y in range(1, 11):
+            drawable_row = []
+
+            for x in range(1, 10):
+                position = self._game_board.get_position((x, y))
+
+                if position.get_current_piece() is not None:
+                    piece_label = position.get_current_piece().get_label()
+                    controlling_player = position.get_current_piece().get_player()
+
+                    if controlling_player is self._current_player:
+                        piece_label = piece_label.upper()
+
+                    drawable_row.append(piece_label)
+
+                else:
+                    drawable_row.append("**")
+
+            drawable_data.append(drawable_row)
+
+        drawable_data.append([str(self._player_1.get_points())])
+        return drawable_data
+
+    # Methods for Tests
     def get_board(self):
         """ For testing only """
         return self._game_board
@@ -160,6 +195,8 @@ class Player:
         self._in_check = False
         self._in_checkmate = False
         self._taking_turn = False
+
+        self._points = 0
 
         self._player_pieces = []
         self.generate_pieces()
@@ -193,6 +230,13 @@ class Player:
         Returns the player's color (RED or BLUE)
         """
         return self._player_color
+
+    def get_points(self) -> int:
+        """
+        Returns the number of points the player has accumulated through piece capturing.
+        This is not a graded feature - it is a future feature I'd like to implement.
+        """
+        return self._points
 
     # Turn Methods
     def is_taking_turn(self) -> bool:
@@ -242,11 +286,11 @@ class Board:
         objects, such that a generated xy coordinate represents the key and the Position object represents
         that key's value.
         """
-        for x in range(1, 10):
-            for y in range(1, 11):
+        for y in range(1, 11):
+            for x in range(1, 10):
                 self._board[(x, y)] = Position((x, y))
 
-        print(self._board)
+        # print(self._board)
 
     def place_player_pieces(self):
         """
@@ -257,12 +301,14 @@ class Board:
         players = [self._player1, self._player2]
 
         for player in players:
+            positions_placed = []
             player_pieces = player.get_all_pieces()
             for piece in player_pieces:
                 start_coordinates = piece.get_starting_coordinates()
                 for xy_pos in start_coordinates:
-                    if xy_pos is not None:
+                    if xy_pos is not None and xy_pos not in positions_placed:
                         self._board[xy_pos].assign_piece_to_position(piece)
+                        positions_placed.append(xy_pos)
 
     @staticmethod
     def get_blue_palace_coordinates() -> tuple:
@@ -302,22 +348,6 @@ class Board:
             return self._board[xy_coord]
         else:
             return None
-
-    # Display Functions
-    #
-    # def display_board(self):
-    #     display = JanggiDisplay()
-    #     display.draw(self.get_board_display_data())
-    #
-    # @staticmethod
-    # def get_board_display_data(self):
-    #     return []
-    #
-    # @staticmethod
-    # def display_test_board(self):
-    #     display = JanggiDisplay()
-    #     display.test_board()
-    #
 
 
 class Piece:
@@ -507,7 +537,7 @@ class Cannon(Piece):
         self._points = 7
 
         self._red_start_coordinates = ((2, 3), (8, 3))
-        self._blue_start_coordinates = ((2, 8), (8,8))
+        self._blue_start_coordinates = ((2, 8), (8, 8))
 
         self._in_palace = False
         self._confined_to_palace = False
@@ -566,6 +596,10 @@ class Position:
         """
         return self._current_piece
 
+    def get_position_location(self) -> tuple:
+        """ Returns the x,y location of the position """
+        return self._xy_pos
+
     def assign_piece_to_position(self, piece: Piece):
         """
         Assigns a piece to an empty position. If the position is already filled, raise Exception.
@@ -583,7 +617,15 @@ class Position:
 
 game = JanggiGame()
 gameboard = game.get_board()
-blue_pos: Position = gameboard.get_position((8, 10))
-print(blue_pos)
-print(blue_pos.get_current_piece())
-print(blue_pos.get_current_piece().get_player().get_player_color())
+game.display_board()
+
+# print("testing board:")
+# for y in range(1, 11):
+#     for x in range(1, 10):
+#         position = gameboard.get_position((x, y))
+#         print(position)
+#         print(position.get_position_location())
+#         print(position.get_current_piece())
+#         if position.get_current_piece() is not None:
+#             print(position.get_current_piece().get_player().get_player_color())
+#         print()

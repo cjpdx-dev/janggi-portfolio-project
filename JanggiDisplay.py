@@ -9,37 +9,34 @@ class JanggiDisplay:
 
     def __init__(self):
 
-        self.line1 = "                                                            "
-        self.line2 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   RED : %s  "
-        self.line3 = "          ========================================          "
-        self.line4 = "        1 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 1        "
-        self.line5 = "          |             |   \  /   |             |          "
-        self.line6 = "        2 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 2        "
-        self.line7 = "          |             |   /  \   |             |          "
-        self.line8 = "        3 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 3        "
-        self.line9 = "          |                                      |          "
-        self.line10 = "        4 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 4        "
-        self.line11 = "          |                                      |          "
-        self.line12 = "        5 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 5        "
-        self.line13 = "          |                                      |          "
-        self.line14 = "        6 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 6        "
-        self.line15 = "          |                                      |          "
-        self.line16 = "        7 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 7        "
-        self.line17 = "          |                                      |          "
-        self.line18 = "        8 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 8        "
-        self.line19 = "          |             |   \  /   |             |          "
-        self.line20 = "        9 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 9        "
-        self.line21 = "          |             |   /  \   |             |          "
-        self.line22 = "       10 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 10       "
-        self.line23 = "          ========================================          "
-        self.line24 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   BLUE: %s  "
-        self.line25 = "                                                            "
+        self.line1 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   RED : %s  "
+        self.line2 = "          ========================================          "
+        self.line3 = "        1 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 1        "
+        self.line4 = "          |             |   \  /   |             |          "
+        self.line5 = "        2 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 2        "
+        self.line6 = "          |             |   /  \   |             |          "
+        self.line7 = "        3 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 3        "
+        self.line8 = "          |                                      |          "
+        self.line9 = "        4 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 4        "
+        self.line10 = "          |                                      |          "
+        self.line11 = "        5 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 5        "
+        self.line12 = "          |                                      |          "
+        self.line13 = "        6 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 6        "
+        self.line14 = "          |                                      |          "
+        self.line15 = "        7 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 7        "
+        self.line16 = "          |                                      |          "
+        self.line17 = "        8 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 8        "
+        self.line18 = "          |             |   \  /   |             |          "
+        self.line19 = "        9 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 9        "
+        self.line20 = "          |             |   /  \   |             |          "
+        self.line21 = "       10 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 10       "
+        self.line22 = "          ========================================          "
+        self.line23 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   BLUE: %s  "
 
         self.board_rows = [self.line1, self.line2, self.line3, self.line4, self.line5, self.line6,
                            self.line7, self.line8, self.line9, self.line10, self.line11, self.line12,
                            self.line13, self.line14, self.line15, self.line16, self.line17, self.line18,
-                           self.line19, self.line20, self.line21, self.line22, self.line23, self.line24,
-                           self.line25]
+                           self.line19, self.line20, self.line21, self.line22, self.line23,]
 
     def draw(self, current_board):
 
@@ -51,9 +48,9 @@ class JanggiDisplay:
             else:
                 print(row)
 
-    def test_board(self):
+    def display_test_board(self):
 
-        test_placements = ["100"], \
+        test_placements = ["0"], \
                           ["CH", "HR", "EL", "GU", "**", "GU", "HR", "EL", "CH"], \
                           ["**", "**", "**", "**", "GE", "**", "**", "**", "**"], \
                           ["**", "CA", "**", "**", "**", "**", "**", "CA", "**"], \
@@ -64,14 +61,14 @@ class JanggiDisplay:
                           ["**", "CA", "**", "**", "**", "**", "**", "CA", "**"], \
                           ["**", "**", "**", "**", "GE", "**", "**", "**", "**"], \
                           ["CH", "EL", "HR", "GU", "**", "GU", "EL", "HR", "CH"], \
-                          ["100"]
+                          ["0"]
 
         self.draw(test_placements)
 
 
 if __name__ == "__main__":
-    print("JanggiDisplay.py is being run directly: displaying sample test board.")
+    print("JanggiDisplay.py is being run directly: displaying a sample test board.")
     display = JanggiDisplay()
-    display.test_board()
+    display.display_test_board()
 else:
     print("JanggiDisplay.py is being imported into another module")
