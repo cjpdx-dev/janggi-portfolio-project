@@ -7,9 +7,8 @@
 #               for further details.
 #
 
-from JanggiDisplay import JanggiDisplay         # optional import if/when we want to display
-                                                # the CLI game board
-
+# optional import if/when we want to display # the CLI game board
+from JanggiDisplay import JanggiDisplay
 from JanggiExceptions import *
 
 
@@ -45,26 +44,99 @@ class JanggiGame:
         self._player_1.set_taking_turn(True)
         # self.display_board()
 
-    def make_move(self, old_pos: str, new_pos: str) -> bool:
+    def make_move(self, current_pos: str, new_pos: str) -> bool:
         """
         Makes a move, first by validating the old position and then the new position. Gets
         the Piece at the old position and checks if it belongs to the current_player. Then checks
         the new position to see if it is either empty or occupied by the opposing player. Finally,
         """
-        pass
+        input_positions = (current_pos.lower(), new_pos.lower())
+        print(input_positions)
 
-    def convert_algebraic_to_xy(self) -> tuple:
+        if self.validate_position_existence(input_positions) is False:
+            return False
+        else:
+            xy_move = self.convert_algebraic_to_xy((current_pos, new_pos))
+
+        move_is_valid = self._game_board.check_move(xy_move)
+        # print(xy_move)
+        # # test code
+        # old_position: Position = self._game_board.get_position(xy_move[0])
+        # new_position: Position = self._game_board.get_position(xy_move[1])
+        # print(new_position.get_current_piece().get_label())
+        # print(new_position.get_current_piece().get_player().get_player_color())
+
+    @staticmethod
+    def validate_position_existence(input_positions: tuple) -> bool:
+        """
+        Checks that the converted (x,y) notation is valid (i.e. the position exists on the board).
+        Does NOT check if the made cannot be made of other reasons.
+        """
+        if input_positions[0] == input_positions[1]:
+            print("ERROR: The given positions were identical.")
+            return False
+
+        for position in input_positions:
+            if len(position) not in range(2, 4):
+                print("ERROR: Invalid position format.")
+                return False
+
+            if ord(position[0]) not in range(ord("a"), ord("i")+1):
+                print("ERROR: first character in position be a letter in the range of \"a\" through \"i\"")
+                return False
+
+            row_string = None
+            try:
+                if len(position) == 2:
+                    row_string = position[1]
+
+                if len(position) == 3:
+                    row_string = position[1:3]
+
+                row_num = int(row_string)
+
+                if row_num not in range(1, 11):
+                    print("ERROR: Invalid range for row number. Row number must be between 1 and 10.")
+                    return False
+
+            except:
+                print("ERROR: Row notation was invalid. Row must be a number between 1 and 10.")
+
+        return True
+
+    @staticmethod
+    def convert_algebraic_to_xy(algebraic_positions: tuple) -> tuple:
         """
         Converts the user's algebraic notation for representing piece position into (x,y) coordinate
         notation that the Board object can parse.
         """
-        pass
+        positions_list = []
+        for position in algebraic_positions:
+            column_num = None
+            row_num = None
+            try:
+                column_string = position[0]
+                column_ascii_num = ord(column_string)
+                column_num = column_ascii_num - 96
+                print("column num: ", column_num)
 
-    def check_for_valid_coordinates(self) -> bool:
-        """
-        Checks that the converted (x,y) notation is valid (i.e. the position exists on the board).
-        """
-        pass
+                if len(position) == 2:
+                    row_num = int(position[1])
+                if len(position) == 3:
+                    row_num = int(position[1:3])
+
+            except IndexError:
+                "IndexError in JanggiGame.convert_algebraic_to_xy()"
+            except ValueError:
+                "ValueError in JanggiGame.convert_algebraic_to_xy()"
+            except Exception as e:
+                print("An unhandled exception occurred: ")
+                print(e)
+
+            positions_list.append([column_num, row_num])
+
+        xy_move_notation = (tuple(positions_list[0]), tuple(positions_list[1]))
+        return xy_move_notation
 
     def refresh_game_state(self):
         """
@@ -77,8 +149,6 @@ class JanggiGame:
         """
         Accesses the current player's data to determine if the player is in check and returns True
         or False accordingly. This method is user-facing so it must handle invalid input from the user.
-        :param player_color: (str) "BLUE" or "RED"
-        :return: bool
         """
         if player_color == "BLUE":
             return self._player_1.is_in_check()
@@ -89,7 +159,7 @@ class JanggiGame:
 
     def look_for_checkmate(self):
         """
-        his function is called by refresh_game_status if next player is found to be in checkmate.
+        This function is called by refresh_game_status if next player is found to be in checkmate.
         Checkmate is found by iterating through each piece and seeing
         """
 
@@ -98,30 +168,32 @@ class JanggiGame:
         Sets the game state to the string argument passed to the function. Does not need to
         screen for an invalid string, because this function is only called by refresh_game_state()
         which only passes valid strings.
-        :param game_state:
-        :return:
         """
         self._game_state = game_state
 
     def get_game_state(self) -> str:
         """
         Returns the string representation of the game state.
-        :return: str - "UNFINISHED", "RED_WON", or "BLUE_WON"
+        :return str: "UNFINISHED", "RED_WON", "BLUE_WON"
         """
         return self._game_state
 
     def get_current_player(self):
-        """ Returns the Player object currently taking their turn """
+        """
+        Returns the Player object currently taking their turn
+        """
         return self._current_player
 
     def get_next_player(self):
-        """ Returns the Player object whose turn is next"""
+        """
+        Returns the Player object whose turn is next
+        """
         if self._current_player == self._player_1:
             return self._player_2
         elif self._current_player == self._player_2:
             return self._player_1
         else:
-            print("ERROR: current player is not initialized. Returning None.")
+            print("ERROR: A current player was not initialized. Returning None.")
 
     def switch_turns(self):
         """
@@ -129,25 +201,34 @@ class JanggiGame:
         set_taking_turn field accordingly.
         """
         if self._current_player is self._player_1:
-            self._player_1.set_taking_turn(False)
-            self._player_2.set_taking_turn(True)
+            self._player_1.set_as_current_player(False)
+            self._player_2.set_as_current_player(True)
             self._current_player = self._player_2
 
         elif self._current_player is self._player_2:
-            self._player_2.set_taking_turn(False)
-            self._player_1.set_taking_turn(True)
+            self._player_2.set_as_current_player(False)
+            self._player_1.set_as_current_player(True)
             self._current_player = self._player_1
 
         else:
             print("ERROR: Attempted to switch turns but _current_player is set to None")
 
     # Display Functions
-
     def display_board(self):
+        """
+        Draws a CLI representation of the game board.
+        """
         self._display.draw(self.get_drawable_board_data())
 
     def get_drawable_board_data(self):
-        drawable_data = [[str(self._player_2.get_points())]]
+        """
+        Iterates through each position of the game board and returns a 2d list
+        of positions and their pieces. ** indicates the absence of a Piece.
+        """
+        player_2_label = self._player_2.get_player_color()
+        if self._current_player != self._player_2:
+            player_2_label = player_2_label.lower()
+        drawable_data = [[player_2_label, str(self._player_2.get_points())]]
 
         for y in range(1, 11):
             drawable_row = []
@@ -169,12 +250,15 @@ class JanggiGame:
 
             drawable_data.append(drawable_row)
 
-        drawable_data.append([str(self._player_1.get_points())])
+        player_1_label = self._player_1.get_player_color()
+        if self._current_player != self._player_1:
+            player_1_label = player_1_label.lower()
+        drawable_data.append([player_1_label, str(self._player_1.get_points())])
         return drawable_data
 
-    # Methods for Tests
+    # Test Methods
     def get_board(self):
-        """ For testing only """
+        """ For testing only. """
         return self._game_board
 
 
@@ -188,24 +272,26 @@ class Player:
     """
 
     def __init__(self, color: str):
-        """ Initializes the Player object """
+        """
+        Initializes the Player object. Accepts a string that represents the player color, which
+        is a unique identifier for the player.
+        """
 
         self._player_color = color
-
-        self._in_check = False
-        self._in_checkmate = False
-        self._taking_turn = False
-
         self._points = 0
 
         self._player_pieces = []
+
+        self._in_check = False
+        self._in_checkmate = False
+        self._is_current_player = False
+
         self.generate_pieces()
 
-    # Piece methods
     def generate_pieces(self):
         """
-        Generates the all necessary Piece objects to start the game and stores each Piece object
-        in the list self._player_pieces.
+        Generates all necessary Piece objects for initial game state. Stores these Piece objects
+        in a list that is part of the Player object's data.
         """
         pieces = [General(self, "ge"), Guard(self, "gu"), Guard(self, "gu"), Chariot(self, "ch"),
                   Chariot(self, "ch"), Horse(self, "hr"), Horse(self, "hr"), Elephant(self, "el"),
@@ -224,12 +310,47 @@ class Player:
         """
         return self._player_pieces
 
-    # Player Info Methods
     def get_player_color(self) -> str:
         """
         Returns the player's color (RED or BLUE)
         """
         return self._player_color
+
+    def is_taking_turn(self) -> bool:
+        """
+        Returns the bool value that represents if the player is currently taking a turn or not
+        """
+        return self._is_current_player
+
+    def set_taking_turn(self, turn_status: bool):
+        """
+        Sets the turn status to either True (player currently taking turn) or False (turn is over)
+        """
+        self._is_current_player = turn_status
+
+    def is_in_check(self) -> bool:
+        """
+        Returns the Player's "in check" state
+        """
+        return self._in_check
+
+    def set_check_status(self, check_state: bool):
+        """
+        Sets the "in check" state of the Player to True or False
+        """
+        self._in_check = check_state
+
+    def is_in_checkmate(self) -> bool:
+        """
+        Returns the Player's "in checkmate" state.
+        """
+        return self._in_checkmate
+
+    def set_checkmate_status(self, checkmate_status: bool):
+        """
+        Sets the Player's "in checkmate" state to True or False
+        """
+        self._in_checkmate = checkmate_status
 
     def get_points(self) -> int:
         """
@@ -237,33 +358,6 @@ class Player:
         This is not a graded feature - it is a future feature I'd like to implement.
         """
         return self._points
-
-    # Turn Methods
-    def is_taking_turn(self) -> bool:
-        """ Returns the bool value that represents if the player is currently taking a turn or not"""
-        return self._taking_turn
-
-    def set_taking_turn(self, turn_status: bool):
-        """ Sets the turn status to either True (player currently taking turn) or False (turn is over)"""
-        self._taking_turn = turn_status
-
-    # "In Check" Methods
-    def is_in_check(self) -> bool:
-        """ Returns whether the player is currently in check """
-        return self._in_check
-
-    def set_check_status(self, check_state: bool):
-        """ Sets the _in_check state to True or False"""
-        self._in_check = check_state
-
-    # Checkmate Functions
-    def is_in_checkmate(self) -> bool:
-        """ Returns the current state of self._in_checkmate """
-        return self._in_checkmate
-
-    def set_checkmate_status(self, checkmate_status: bool):
-        """ Sets the current state of self._in_checkmate """
-        self._in_checkmate = checkmate_status
 
 
 class Board:
@@ -273,24 +367,27 @@ class Board:
     """
 
     def __init__(self, player1: Player, player2: Player):
-        """ Initializes the Board object """
+        """
+        Initializes the Board object. Accepts two Player objects as arguments.
+        """
         self._player1 = player1
         self._player2 = player2
 
         self._board = {}
+
+        # helper methods
         self.initialize_empty_board()
         self.place_player_pieces()
 
     def initialize_empty_board(self):
-        """ Initializes an empty board using a dictionary and populates that dictionary with Position
-        objects, such that a generated xy coordinate represents the key and the Position object represents
-        that key's value.
+        """
+        Initializes an empty board using a dictionary and populates that dictionary with Position
+        objects, such that a generated xy coordinate represents the key and the Position object
+        represents that key's value.
         """
         for y in range(1, 11):
             for x in range(1, 10):
                 self._board[(x, y)] = Position((x, y))
-
-        # print(self._board)
 
     def place_player_pieces(self):
         """
@@ -307,52 +404,123 @@ class Board:
                 start_coordinates = piece.get_starting_coordinates()
                 for xy_pos in start_coordinates:
                     if xy_pos is not None and xy_pos not in positions_placed:
-                        self._board[xy_pos].assign_piece_to_position(piece)
+                        self._board[xy_pos].assign_piece_to_empty_position(piece)
                         positions_placed.append(xy_pos)
-
-    @staticmethod
-    def get_blue_palace_coordinates() -> tuple:
-        """
-        Static method that returns the (x,y) coordinates of the Blue palace positions. Data structure returned
-        is a tuple of tuples.
-        """
-
-        # we eventually can change this data struct to a dict so that we can use it
-        # to look up valid piece movements within the palace.
-        blue_palace_positions = ((4, 1), (5, 1), (6, 1),
-                                 (4, 2), (5, 2), (6, 2),
-                                 (4, 3), (5, 3), (6, 3))
-
-        return blue_palace_positions
-
-    @staticmethod
-    def get_red_palace_coordinates() -> tuple:
-        """
-        Static method that returns the (x,y) coordinates of the Red palace positions. Data structure returned
-        is a tuple of tuples.
-        """
-        # we eventually can change this data struct to a dict so that we can use it
-        # to look up valid piece movements within the palace.
-        red_palace_positions = ((4, 10), (5, 10), (6, 10),
-                                (4, 9), (5, 9), (6, 9),
-                                (4, 8), (5, 8), (6, 8))
-
-        return red_palace_positions
 
     def get_position(self, xy_coord: tuple):
         """
-        Checks board positions and returns a Position object if a matching
-        xy_coord key value is found. Otherwise, returns None.
+        Checks board positions and returns a Position object if a matching xy_coord key value is found.
+        Otherwise, returns None.
         """
         if xy_coord in self._board:
             return self._board[xy_coord]
         else:
             return None
 
+    def check_move(self, xy_coord: tuple) -> bool:
+        """
+        Determine if the move is valid based on piece placement and piece movement ability.
+        Accepts a tuple that represents (current_position, new_position). These positions have already
+        been verified to exist on the board before this method can be called. The move itself is validated
+        by this method. Returns True if the move is shown to be possible, otherwise returns False.
+        """
+        move_is_a_reposition = False
+        movement_rules = None
+
+        move_is_a_capture = False
+        capture_rules = None
+
+        # Check the current position
+        current_pos: Position = self.get_position(xy_coord[0])
+        piece_at_current_pos: Piece = current_pos.get_current_piece()
+        if piece_at_current_pos is None:
+            print("ERROR: There is no piece at the current position.")
+            return False
+        if piece_at_current_pos.get_player().is_taking_turn() is False:
+            print("ERROR: Attempted to move a piece not controlled by the current player.")
+            return False
+
+        # Check the new position
+        new_pos: Position = self.get_position(xy_coord[1])
+        piece_at_new_pos: Piece = new_pos.get_current_piece()
+        if piece_at_new_pos is None:
+            move_is_a_reposition = True
+        elif piece_at_new_pos.get_player().is_taking_turn() is False:
+            move_is_a_capture = True
+        elif piece_at_new_pos.get_player().is_taking_turn() is True:
+            print("ERROR: Attempted to move a piece to a position already controlled by the current player.")
+            return False
+        else:
+            print("An unknown condition was found while checking the new position in Board.check_move()")
+
+        # Get the piece's movement rules
+
+        # Determine that either the current position or new position are within
+        # a Palace.
+            # If a move is exiting the palace, then must follow Palace movement rules
+            # until it reaches the perimeter of the palace.
+            # If a move is entering the palace, there may be different rules too? Unsure
+
+        # Check the piece's movement rules...
+            # (1) By seeing if the change in coordinates from the current pos and new pos
+            # represent a valid vector in the context of the piece's movement rules
+            # (2) By seeing if the sequence moves needed to get to the new pos are possible,
+            # by iterating through the positions in that sequence and detecting if another piece
+            # is present at any of those positions.
+
+        # If the piece's movement rules are valid, return True
+
+    @staticmethod
+    def get_red_palace_coordinates() -> dict:
+        """
+        Static method that returns the (x,y) coordinates of the Red palace positions. Data structure returned
+        is a dict[tuple]: (tuple(tuple))
+        """
+
+        # we eventually can change this data struct to a dict so that we can use it
+        # to look up valid piece movements within the palace.
+        red_palace_positions = {(4, 1): ((1, 0), (1, -1), (0, -1)),
+                                (5, 1): ((-1, 0), (0, -1), (1, 0)),
+                                (6, 1): ((-1, 0), (-1, -1), (0, -1)),
+
+                                (4, 2): ((0, 1), (1, 0), (0, -1)),
+                                (5, 2): ((0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, -1)),
+                                (6, 2): ((0, 1), (-1, 0), (0, -1)),
+
+                                (4, 3): ((0, 1), (1, 1), (1, 0)),
+                                (5, 3): ((-1, 0), (0, 1), (1, 0)),
+                                (6, 3): ((-1, 0), (-1, 1), (0, 1))
+                                }
+
+        return red_palace_positions
+
+    @staticmethod
+    def get_blue_palace_coordinates() -> dict:
+        """
+        Static method that returns the (x,y) coordinates of the Red palace positions. Data structure returned
+        is dict[tuple]: (tuple(tuple))
+        """
+        # we eventually can change this data struct to a dict so that we can use it
+        # to look up valid piece movements within the palace.
+        red_palace_positions = {(4, 10): ((0, 1), (1, 1), (1, 0)),
+                                (5, 10): ((-1, 0), (0, 1), (1, 0)),
+                                (6, 10): ((-1, 0), (-1, 1), (0, 1)),
+
+                                (4, 9): ((0, 1), (1, 0), (0, -1)),
+                                (5, 9): ((0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, -1)),
+                                (6, 9): ((0, 1), (-1, 0), (0, -1)),
+
+                                (4, 8): ((1, 0), (1, -1), (0, -1)),
+                                (5, 8): ((-1, 0), (0, -1), (1, 0)),
+                                (6, 8): ((-1, 0), (-1, -1), (0, -1))
+                                }
+
+        return red_palace_positions
+
 
 class Piece:
     """
-    A Piece class represents a piece object - in practice all Piece objects will exist as
+    The Piece class represents a piece object - in practice all Piece objects will exist as
     one of the child classes associated with this parent Piece class. Each piece
     will have be associated with a controlling player, possess a label, and have fields
     determining its possible start positions, move rules, whether it is in or confined to
@@ -360,7 +528,9 @@ class Piece:
     """
 
     def __init__(self, player: Player, label: str):
-        """ Initializes the Piece object """
+        """
+        Initializes the Piece object
+        """
         self._controlling_player = player
         self._label = label
 
@@ -369,41 +539,47 @@ class Piece:
 
         self._in_palace = None
         self._confined_to_palace = None
-        self._possible_moves = ()
+        self._possible_moves = {(): (())}
 
-        # unsure as to whether these fields will be useful later
-        self._in_danger = None
-        self._captured = None
-        #
+        # # unsure as to whether these fields will be useful later
+        # self._in_danger = None
+        # self._captured = None
 
     def get_player(self) -> Player:
-        """ Returns the Player object that the piece is controlled by. """
+        """
+        Returns the Player object that the piece is controlled by.
+        """
         return self._controlling_player
 
     def get_label(self) -> str:
-        """ Returns the string label that identifies the piece type. """
+        """
+        Returns the string label that identifies the piece type.
+        """
         return self._label
 
     def get_starting_coordinates(self) -> tuple:
         """
         Returns the starting positions for the piece, based on the piece's color ("BLUE" or "RED")
-        :return: A tuple of tuples. If the piece is a General, the second tuple will be empty.
+        :return: A tuple of tuples. If the piece is a General, the second tuple will be None.
         """
         if self._controlling_player.get_player_color() == "BLUE":
             return self._blue_start_coordinates
         elif self._controlling_player.get_player_color() == "RED":
             return self._red_start_coordinates
         else:
-            print("No Player")
+            print("ERROR: A player other than BLUE or RED was detected.")
 
-    def get_possible_moves(self):
-        """ Returns the possible movements for the Piece """
+    def get_possible_moves(self) -> dict:
+        """
+        Returns the possible movements for the Piece.
+        """
         return self._possible_moves
-        pass
 
 
 class General(Piece):
-    """ A child class of Piece that represents the General """
+    """
+    A child class of Piece that represents the General.
+    """
 
     def __init__(self, player, label):
 
@@ -423,7 +599,9 @@ class General(Piece):
 
 
 class Guard(Piece):
-    """ A child class of Piece that represents a Guard """
+    """
+    A child class of Piece that represents a Guard.
+    """
     def __init__(self, player, label):
         super().__init__(player, label)
 
@@ -439,7 +617,9 @@ class Guard(Piece):
 
 
 class Chariot(Piece):
-    """ A child class of Piece that represents a Chariot """
+    """
+    A child class of Piece that represents a Chariot.
+    """
     def __init__(self, player, label):
         super().__init__(player, label)
 
@@ -463,7 +643,9 @@ class Chariot(Piece):
 
 
 class Horse(Piece):
-    """ A child class of Piece that represents a Horse """
+    """
+    A child class of Piece that represents a Horse.
+    """
     def __init__(self, player, label):
         super().__init__(player, label)
 
@@ -513,7 +695,9 @@ class Horse(Piece):
 
 
 class Elephant(Piece):
-    """ A child class of piece that represents an Elephant """
+    """
+    A child class of piece that represents an Elephant.
+    """
     def __init__(self, player, label):
         super().__init__(player, label)
 
@@ -529,7 +713,9 @@ class Elephant(Piece):
 
 
 class Cannon(Piece):
-    """ A child class of Piece that represents a Cannon """
+    """
+    A child class of Piece that represents a Cannon.
+    """
     def __init__(self, player, label):
         super().__init__(player, label)
 
@@ -545,7 +731,9 @@ class Cannon(Piece):
 
 
 class Soldier(Piece):
-    """ A child class of Piece that represents a Soldier """
+    """
+    A child class of Piece that represents a Soldier.
+    """
     def __init__(self, player, label):
         super().__init__(player, label)
 
@@ -563,24 +751,32 @@ class Soldier(Piece):
 class Position:
     """
     This class represents a position within the board. The Position accepts an (x,y) as its argument
-    and this field is the main identifying field for the Position. The Position also has a field to store
-    a Player object as its controlling player. If the Position is empty, that field is None. If a field currently
-    has a Piece, that Piece object is stored in the _current_piece field.
+    which represents its location on the board and is therefore the position's unique identifier.\n
+
+    If a Piece object resides at the Position, that piece can be accessed using the method
+    Position.get_current_piece(). If a Position is a palace position, then the method
+    Position.check_if_palace_position() returns True.
     """
 
     def __init__(self, xy_position: tuple):
-        """ Initializes the Position object """
+        """
+        Initializes the Position object. Accepts a tuple (x,y) as an argument.
+        """
 
         self._xy_pos = xy_position
         self._is_palace_position = self.check_if_palace_position()
 
         self._current_piece = None
 
-    def check_if_palace_position(self):
+    def check_if_palace_position(self) -> bool:
         """
-        Calls the static method Board.get_color_palace_coordinates() to determine if the Position's
-        xy_pos can be found in that data structure. Returns True or False and sets the Position's
-        self._is_palace_position accordingly.
+        Checks to see if this Position represents a Palace position.
+
+        Accomplishes this by calling the static methods Board.get_[color]_palace_coordinates(),
+        where [color] is either "red" or "blue".
+
+        If the (x,y) coordinate associated with the Position is found in the data structure in either of the two static
+        methods, this method returns True. Otherwise, returns False.
         """
         if self._xy_pos in Board.get_blue_palace_coordinates():
             return True
@@ -591,32 +787,40 @@ class Position:
 
     def get_current_piece(self) -> Piece:
         """
-        Returns the current Piece object assigned to the position. If the position does not have
-        a piece, returns None
+        Returns the current Piece object assigned to the position. If the position does not have a piece, this method
+        returns None.
         """
         return self._current_piece
 
     def get_position_location(self) -> tuple:
-        """ Returns the x,y location of the position """
+        """
+        Returns the (x,y) location of the position.
+        """
         return self._xy_pos
 
-    def assign_piece_to_position(self, piece: Piece):
+    def assign_piece_to_empty_position(self, piece: Piece):
         """
-        Assigns a piece to an empty position. If the position is already filled, raise Exception.
-        If the player removing the Piece is not its controlling player, return raise Exception.
+        Assigns a piece to an empty position. If the position is already filled, then an Exception is raised.
         """
+        # TODO: Filter out attempts to assign a piece to a filled position (such that self_current_piece != None)
         self._current_piece = piece
 
     def remove_piece_from_position(self, controlling_player: Player):
         """
-        Removes a piece from a position occupied by a piece by setting _controlling_player to None and
-        _current_piece to None. If the position does not have a piece present, return False. If the player removing
-        the Piece is not its controlling player, return False. Otherwise, return True.
+        Removes a Piece object from the Position. Accepts a Player object as an argument. If the Player argument is not
+        equal to the piece's controlling player, then an Exception is raised. Otherwise the Piece is removed by setting
+        self._current_piece to None.
         """
+        # TODO: Filter out attempts to remove Piece if controlling_player != self._current_piece.get_player()
+        self._current_piece = None
 
 
 game = JanggiGame()
 gameboard = game.get_board()
+game.display_board()
+
+game.make_move("a9", "i10")
+game.switch_turns()
 game.display_board()
 
 # print("testing board:")
