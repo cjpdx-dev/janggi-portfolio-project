@@ -1,4 +1,0 @@
-
-
-class PositionAssignmentError(Exception):
-    pass
