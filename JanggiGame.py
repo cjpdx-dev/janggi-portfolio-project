@@ -701,12 +701,16 @@ class Board:
     def check_for_pass(self, xy_move):
         current_position: Position = self.get_position(xy_move[0])
         piece_at_current_position = current_position.get_current_piece()
-        controlling_player = piece_at_current_position.get_player()
 
-        if controlling_player.is_current_player():
-            if xy_move[0] == xy_move[1]:
-                print("Pass detected")
-                return True
+        if piece_at_current_position is not None:
+            controlling_player = piece_at_current_position.get_player()
+
+            if controlling_player.is_current_player():
+                if xy_move[0] == xy_move[1]:
+                    print("Pass detected")
+                    return True
+                else:
+                    return False
             else:
                 return False
         else:
@@ -925,7 +929,7 @@ class Horse(Piece):
         self._confined_to_palace = False
 
         self._possible_moves = {
-            (-1, -2): ( (0, -1), (-1, -1)),
+            (-1, -2): ((0, -1), (-1, -1)),
 
             (1, -2): ((0, -1), (1, -1)),
 
@@ -1037,17 +1041,16 @@ class Position:
 
         self._xy_pos = xy_position
 
+        self._current_piece = None
+
+        self._is_red_palace_position = False
+        self._is_blue_palace_position = False
+
         if self._xy_pos in Board.get_red_palace_move_rules():
             self._is_red_palace_position = True
-        else:
-            self._is_red_palace_position = False
 
         if self._xy_pos in Board.get_blue_palace_move_rules():
             self._is_blue_palace_position = True
-        else:
-            self._is_blue_palace_position = False
-
-        self._current_piece = None
 
     def check_if_palace_position(self) -> bool:
         """
@@ -1093,18 +1096,16 @@ class Position:
 
     def assign_piece_to_empty_position(self, piece: Piece):
         """
-        Assigns a piece to an empty position. If the position is already filled, then an Exception is raised.
+        Assigns a Piece object to an empty position. Assumes that the removal of hte piece Object is valid, based
+        on the validation performed in the validate_ methods of Object.Board
         """
-        # TODO: Filter out attempts to assign a piece to a filled position (such that self_current_piece != None)
         self._current_piece = piece
 
     def remove_piece_from_position(self):
         """
-        Removes a Piece object from the Position. Accepts a Player object as an argument. If the Player argument is not
-        equal to the piece's controlling player, then an Exception is raised. Otherwise the Piece is removed by setting
-        self._current_piece to None.
+        Removes a Piece object from the Position. Assumes that the removal of the Piece object is valid, based on
+        the validation performed in the validate_ methods in Object.Board
         """
-        # TODO: Filter out attempts to remove Piece if controlling_player != self._current_piece.get_player()
         self._current_piece = None
 
 
@@ -1152,90 +1153,36 @@ class JanggiDisplay:
                 print(row)
         print()
 
-    def display_test_board(self):
 
-        test_placements = ["0"], \
-                          ["ch", "el", "hr", "gu", "**", "gu", "el", "hr", "ch"], \
-                          ["**", "**", "**", "**", "ge", "**", "**", "**", "**"], \
-                          ["**", "ca", "**", "**", "**", "**", "**", "ca", "**"], \
-                          ["so", "**", "so", "**", "so", "**", "so", "**", "so"], \
-                          ["**", "**", "**", "**", "**", "**", "**", "**", "**"], \
-                          ["**", "**", "**", "**", "**", "**", "**", "**", "**"], \
-                          ["SO", "**", "SO", "**", "SO", "**", "SO", "**", "SO"], \
-                          ["**", "CA", "**", "**", "**", "**", "**", "CA", "**"], \
-                          ["**", "**", "**", "**", "GE", "**", "**", "**", "**"], \
-                          ["CH", "EL", "HR", "GU", "**", "GU", "EL", "HR", "CH"], \
-                          ["0"]
+game = JanggiGame()
+game.display_board()
 
-        self.draw(test_placements)
+game.make_move("c10", "d8")
+game.display_board()
 
+game.make_move("c1", "d3")
+game.display_board()
 
-# game = JanggiGame()
-# game.display_board()
-#
-# game.make_move("a7", "a6")
-# game.display_board()
-# game.make_move("i4", "i5")
-# game.display_board()
-# game.make_move("a6", "a5")
-# game.display_board()
-# game.make_move("i5", "i6")
-# game.display_board()
-# game.make_move("a5", "a4")
-# game.display_board()
+game.make_move("c7", "d7")
+game.display_board()
 
-#
-# game.make_move("a1", "a1")
+game.make_move("c4", "d4")
+game.display_board()
 
-# game.make_move("e9", "e8")
-# game.display_board()
-# game.make_move("e8", "f9")
-# game.display_board()
-# game.make_move("e8", "f8")
-# game.display_board()
-# game.make_move("f8", "g8")
-# game.display_board()
-# game.make_move("f8", "f9")
-# game.display_board()
-# game.make_move("f9", "e10")
-# game.display_board()
-# game.make_move("f9", "e9")
-# game.display_board()
-# game.make_move("d10", "d9")
-# game.display_board()
-# game.make_move("e9", "d10")
-# game.display_board()
-# game.make_move("f10", "f9")
-# game.display_board()
-# game.make_move("f9", "e9")
-# game.display_board()
-# game.make_move("e9", "d8")
-# game.display_board()
-# game.make_move("d8", "d7")
-# game.display_board()
-# game.make_move("d8", "d9")
-# game.display_board()
-# game.make_move("c10", "a9")
-# game.display_board()
-# game.make_move("d8", "e8")
-# game.display_board()
-# game.make_move("c10", "d8")
-# game.display_board()
-# game.make_move("a10", "a9")
-# game.display_board()
-# game.make_move("a9", "b9")
-# game.display_board()
-# game.make_move("b10", "d7")
-# game.display_board()
-# game.make_move("b9", "c9")
-# game.display_board()
-# game.make_move("c7", "c8")
-# game.display_board()
-# game.make_move("c7", "c5")
-# game.display_board()
-# game.make_move("c7", "c6")
-# game.display_board()
-# game.make_move("c5", "d5")
-# game.display_board()
-# game.make_move("c9", "c7")
-# game.display_board()
+game.make_move("d8", "c6")
+game.display_board()
+
+game.make_move("d8", "d8")
+game.display_board()
+
+game.make_move("d3", "d6")
+game.display_board()
+
+game.make_move("d3", "d3")
+game.display_board()
+
+game.make_move("h10", "g8")
+game.display_board()
+
+game.make_move("h2", "g3")
+
