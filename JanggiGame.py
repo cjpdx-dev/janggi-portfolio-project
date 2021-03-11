@@ -1152,37 +1152,3 @@ class JanggiDisplay:
             else:
                 print(row)
         print()
-
-
-game = JanggiGame()
-game.display_board()
-
-game.make_move("c10", "d8")
-game.display_board()
-
-game.make_move("c1", "d3")
-game.display_board()
-
-game.make_move("c7", "d7")
-game.display_board()
-
-game.make_move("c4", "d4")
-game.display_board()
-
-game.make_move("d8", "c6")
-game.display_board()
-
-game.make_move("d8", "d8")
-game.display_board()
-
-game.make_move("d3", "d6")
-game.display_board()
-
-game.make_move("d3", "d3")
-game.display_board()
-
-game.make_move("h10", "g8")
-game.display_board()
-
-game.make_move("h2", "g3")
-
