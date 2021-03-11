@@ -596,18 +596,16 @@ class Board:
 
         temp_current_xy = current_xy
         for move in move_sequence:
-
-            # if we've arrived at the new_xy, don't check for a blocking piece
-            if temp_current_xy == new_xy:
-                break
-
             print(move)
             temp_current_xy = (move[0] + temp_current_xy[0], move[1] + temp_current_xy[1])
             print(temp_current_xy)
             temp_position: Position = self.get_position(temp_current_xy)
             if temp_position.get_current_piece() is not None:
-                print("Move failed: a piece blocked the move from being completed.")
-                return False
+                if temp_current_xy != new_xy:
+                    print("Move failed: a piece blocked the move from being completed.")
+                    return False
+                else:
+                    return True
 
         print(move_sequence)
         return True
@@ -1171,8 +1169,19 @@ class JanggiDisplay:
 
         self.draw(test_placements)
 
-#
+
 # game = JanggiGame()
+# game.display_board()
+#
+# game.make_move("a7", "a6")
+# game.display_board()
+# game.make_move("i4", "i5")
+# game.display_board()
+# game.make_move("a6", "a5")
+# game.display_board()
+# game.make_move("i5", "i6")
+# game.display_board()
+# game.make_move("a5", "a4")
 # game.display_board()
 
 #
