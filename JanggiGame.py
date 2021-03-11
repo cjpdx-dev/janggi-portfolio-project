@@ -503,12 +503,6 @@ class Board:
         else:
             return Move(current_pos, new_pos, move_is_a_capture)
 
-        # Determine that either the current position or new position are within
-        # a Palace.
-            # If a move is exiting the palace, then must follow Palace movement rules
-            # until it reaches the perimeter of the palace.
-            # If a move is entering the palace, there may be different rules too? Unsure
-
         # Check the piece's movement rules...
             # (1) By seeing if the change in coordinates from the current pos and new pos
             # represent a valid vector in the context of the piece's movement rules
@@ -548,7 +542,7 @@ class Board:
         piece_movement_rules = piece_at_current_pos.get_possible_moves()
 
         current_xy = current_pos.get_position_location()
-        new_xy = current_pos.get_position_location()
+        new_xy = new_pos.get_position_location()
 
         delta_x = new_xy[0] - current_xy[0]
         delta_y = new_xy[1] - current_xy[1]
@@ -629,7 +623,7 @@ class Board:
                                 return False
 
                             elif temp_position.get_current_piece() is not None:
-                                print("Move failed: encountered a piece that blocks the path of the move.")
+                                print("Move failed: Encountered a piece that blocks the path of the move.")
 
                         return True
 
@@ -639,14 +633,18 @@ class Board:
 
             pass
 
-
-
-        # There are no pieces that can move diagonally
-
-        # if piece_at_current_pos.is_confined_to_palace() is False:
-
+    @staticmethod
     def check_non_palace_piece_movement(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos):
-        pass
+
+        piece_label = piece_at_current_pos.get_label()
+        piece_movement_rules = piece_at_current_pos.get_possible_moves()
+
+        current_xy = current_pos.get_position_location()
+        new_xy = current_pos.get_position_location()
+
+        delta_x = new_xy[0] - current_xy[0]
+        delta_y = new_xy[1] - current_xy[1]
+        delta_xy = (delta_x, delta_y)
 
     def check_cannon_rules(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos, is_capture):
         pass
@@ -1100,10 +1098,10 @@ class JanggiDisplay:
 
         self.draw(test_placements)
 
-#
-# game = JanggiGame()
-# game.display_board()
-#
-# game.make_move("e9", "e8")
-# game.switch_turns()
-# game.display_board()
+
+game = JanggiGame()
+game.display_board()
+
+game.make_move("e9", "e8")
+game.switch_turns()
+game.display_board()
