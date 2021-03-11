@@ -155,6 +155,7 @@ class JanggiGame:
         This method determines if the game state has changed by calling _is_in_check. If is_in_check
         returns true, then we call look_for_checkmate
         """
+        self.switch_turns()
         if self._game_board.detect_check(self._current_player) is True:
             pass
 
