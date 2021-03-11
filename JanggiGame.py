@@ -7,10 +7,6 @@
 #               for further details.
 #
 
-# optional import if/when we want to display # the CLI game board
-from JanggiDisplay import JanggiDisplay
-from JanggiExceptions import *
-
 
 class JanggiGame:
     """
@@ -23,9 +19,9 @@ class JanggiGame:
 
         self._game_state = None                                     # Initialize the game state
 
-        self._player_1 = Player("BLUE")                             # Initialize the players
-        self._player_2 = Player("RED")
-        self._current_player = None
+        self._player_1: Player = Player("BLUE")                             # Initialize the players
+        self._player_2: Player = Player("RED")
+        self._current_player: Player = None
 
         self._game_board = Board(self._player_1, self._player_2)    # Initialize the game board
         self._display = JanggiDisplay()
@@ -37,12 +33,8 @@ class JanggiGame:
         as "UNFINISHED"
         """
         self._game_state = "UNFINISHED"
-        self._current_player = self._player_1
-
-        # Not sure if we need to have a player object knowing that it is the current player
-        # but it may be helpful later when we are doing movement validation
-        self._player_1.set_taking_turn(True)
-        # self.display_board()
+        self._current_player: Player = self._player_1
+        self._player_1.set_as_current_player(True)
 
     def make_move(self, current_pos: str, new_pos: str) -> bool:
         """
@@ -50,21 +42,39 @@ class JanggiGame:
         the Piece at the old position and checks if it belongs to the current_player. Then checks
         the new position to see if it is either empty or occupied by the opposing player. Finally,
         """
-        input_positions = (current_pos.lower(), new_pos.lower())
-        print(input_positions)
+        if self.get_game_state() != "UNFINISHED":
+            return False
 
+        input_positions = (current_pos.lower(), new_pos.lower())
         if self.validate_position_existence(input_positions) is False:
             return False
         else:
             xy_move = self.convert_algebraic_to_xy((current_pos, new_pos))
 
-        move_is_valid = self._game_board.check_move(xy_move)
-        # print(xy_move)
-        # # test code
-        # old_position: Position = self._game_board.get_position(xy_move[0])
-        # new_position: Position = self._game_board.get_position(xy_move[1])
-        # print(new_position.get_current_piece().get_label())
-        # print(new_position.get_current_piece().get_player().get_player_color())
+        next_move = self._game_board.validate_move_rules(xy_move)
+        if next_move is not None:
+            # if _current_player was in check before make_move(), make sure the move gets them out of check
+            # AND if _current_player was not in check before make_move(), make sure the move didn't put them in check
+            # if both false:
+            # set _current_player.set_in_check() to False (if necessary)
+            # complete the move
+            if self._current_player.is_in_check() is True:
+                if self._game_board.detect_check(self._current_player) is False:
+
+                # make sure move gets them out of check
+            elif self._current_player.is_in_check() is False:
+                pass
+                # make sure player didn't put themselves in check
+            else:
+                self._game_board.complete_move(next_move)
+                self._current_player.set_check_status(False)
+                self.refresh_game_state()
+
+            print("make_move() returned True")
+            return True
+        else:
+            print("make_move() returned False")
+            return False
 
     @staticmethod
     def validate_position_existence(input_positions: tuple) -> bool:
@@ -118,7 +128,6 @@ class JanggiGame:
                 column_string = position[0]
                 column_ascii_num = ord(column_string)
                 column_num = column_ascii_num - 96
-                print("column num: ", column_num)
 
                 if len(position) == 2:
                     row_num = int(position[1])
@@ -143,6 +152,12 @@ class JanggiGame:
         This method determines if the game state has changed by calling _is_in_check. If is_in_check
         returns true, then we call look_for_checkmate
         """
+        if self.look_for_check() is True:
+            if self.look_for_checkmate() is True:
+                if self._player_1.is_in_checkmate():
+                    self.set_game_state("BLUE_WON")
+
+
         pass
 
     def is_in_check(self, player_color: str) -> bool:
@@ -157,11 +172,6 @@ class JanggiGame:
         else:
             print("ERROR: Invalid player color was passed to function JanggiGame.is_in_check()")
 
-    def look_for_checkmate(self):
-        """
-        This function is called by refresh_game_status if next player is found to be in checkmate.
-        Checkmate is found by iterating through each piece and seeing
-        """
 
     def set_game_state(self, game_state: str):
         """
@@ -213,7 +223,6 @@ class JanggiGame:
         else:
             print("ERROR: Attempted to switch turns but _current_player is set to None")
 
-    # Display Functions
     def display_board(self):
         """
         Draws a CLI representation of the game board.
@@ -222,7 +231,7 @@ class JanggiGame:
 
     def get_drawable_board_data(self):
         """
-        Iterates through each position of the game board and returns a 2d list
+        Iterates through each position of the game board and returns a 2D list
         of positions and their pieces. ** indicates the absence of a Piece.
         """
         player_2_label = self._player_2.get_player_color()
@@ -255,11 +264,6 @@ class JanggiGame:
             player_1_label = player_1_label.lower()
         drawable_data.append([player_1_label, str(self._player_1.get_points())])
         return drawable_data
-
-    # Test Methods
-    def get_board(self):
-        """ For testing only. """
-        return self._game_board
 
 
 class Player:
@@ -322,7 +326,7 @@ class Player:
         """
         return self._is_current_player
 
-    def set_taking_turn(self, turn_status: bool):
+    def set_as_current_player(self, turn_status: bool):
         """
         Sets the turn status to either True (player currently taking turn) or False (turn is over)
         """
@@ -360,6 +364,48 @@ class Player:
         return self._points
 
 
+class Move:
+    """
+    This class represents a validated Move that will be executed by JanggiGame.make_move()
+    It is returned from Board.validate_move_rules()
+    """
+    def __init__(self, old_position, new_position, is_capture):
+        """
+        Initializes a Move object.
+        :param old_position: (object.Position)
+        :param new_position: (object.Position)
+        :param is_capture: (bool)
+        """
+        self._old_position: Position = old_position
+        self._piece_moving: Piece = self._old_position.get_current_piece()
+        self._player_moving: Player = self._piece_moving.get_player()
+
+        self._new_position: Position = new_position
+
+        self._is_capture: bool = is_capture
+        if self._is_capture is True:
+            self._piece_being_captured: Piece = self._new_position.get_current_piece()
+            self._player_being_captured: Player = self._new_position.get_current_piece().get_player()
+        else:
+            self._piece_being_captured = None
+            self._player_being_captured = None
+
+    def get_player(self) -> Player:
+        """ Returns the current player associated with the move """
+        return self._player_moving
+
+    def get_old_position(self):
+        """ Returns the old position associated with the move """
+        return self._old_position
+
+    def get_new_position(self):
+        """ Returns the new position associated with the Move"""
+        return self._new_position
+
+    def move_is_a_capture(self):
+        return self._is_capture
+
+
 class Board:
     """
     This class represents the game board of a Janggi game. It accepts two Player objects
@@ -374,10 +420,10 @@ class Board:
         self._player2 = player2
 
         self._board = {}
-
-        # helper methods
         self.initialize_empty_board()
         self.place_player_pieces()
+
+        self._pieces_that_can_move_in_palace = ("ge", "gu", "ch", "ca", "so")
 
     def initialize_empty_board(self):
         """
@@ -400,9 +446,12 @@ class Board:
         for player in players:
             positions_placed = []
             player_pieces = player.get_all_pieces()
+
             for piece in player_pieces:
                 start_coordinates = piece.get_starting_coordinates()
+
                 for xy_pos in start_coordinates:
+
                     if xy_pos is not None and xy_pos not in positions_placed:
                         self._board[xy_pos].assign_piece_to_empty_position(piece)
                         positions_placed.append(xy_pos)
@@ -417,43 +466,56 @@ class Board:
         else:
             return None
 
-    def check_move(self, xy_coord: tuple) -> bool:
+    def validate_move_rules(self, xy_coord: tuple):
         """
         Determine if the move is valid based on piece placement and piece movement ability.
         Accepts a tuple that represents (current_position, new_position). These positions have already
         been verified to exist on the board before this method can be called. The move itself is validated
-        by this method. Returns True if the move is shown to be possible, otherwise returns False.
+        by this method. Returns a Move object if the move is shown to be possible, otherwise returns None.
         """
-        move_is_a_reposition = False
-        movement_rules = None
-
-        move_is_a_capture = False
-        capture_rules = None
 
         # Check the current position
         current_pos: Position = self.get_position(xy_coord[0])
         piece_at_current_pos: Piece = current_pos.get_current_piece()
         if piece_at_current_pos is None:
-            print("ERROR: There is no piece at the current position.")
-            return False
-        if piece_at_current_pos.get_player().is_taking_turn() is False:
-            print("ERROR: Attempted to move a piece not controlled by the current player.")
-            return False
+            print("Move failed: There is no piece at the current position.")
+            return None
+        elif piece_at_current_pos.get_player().is_taking_turn() is False:
+            print("Move failed: Attempted to move a piece not controlled by the current player.")
+            return None
+        else:
+            player_making_move = piece_at_current_pos.get_player()
 
         # Check the new position
         new_pos: Position = self.get_position(xy_coord[1])
         piece_at_new_pos: Piece = new_pos.get_current_piece()
-        if piece_at_new_pos is None:
-            move_is_a_reposition = True
-        elif piece_at_new_pos.get_player().is_taking_turn() is False:
-            move_is_a_capture = True
-        elif piece_at_new_pos.get_player().is_taking_turn() is True:
-            print("ERROR: Attempted to move a piece to a position already controlled by the current player.")
-            return False
-        else:
-            print("An unknown condition was found while checking the new position in Board.check_move()")
 
-        # Get the piece's movement rules
+        move_is_a_capture = False
+
+        if piece_at_new_pos is None:
+            move_is_a_capture = False
+        else:
+            if piece_at_new_pos.get_player().is_taking_turn() is False:
+                move_is_a_capture = True
+            elif piece_at_new_pos.get_player().is_taking_turn() is True:
+                print("Move failed: Attempted to move a piece to a position already controlled by the current player.")
+                return None
+            else:
+                print("ERROR: An unhandled exception occurred in Board.validate_move_rules()")
+
+        # if piece in palace, call check_palace_piece_movement - if False return None, if Ture return a
+        # validated Move object
+        if piece_at_current_pos.is_in_palace() is True:
+            if self.check_palace_piece_movement(current_pos, new_pos, piece_at_current_pos, piece_at_new_pos) is False:
+                return None
+            else:
+                return Move(current_pos, new_pos, move_is_a_capture)
+
+        # if piece not in palace, call check_non_palace_piece_movement and return None or Move object
+        if self.check_non_palace_piece_movement(current_pos, new_pos, piece_at_current_pos, piece_at_new_pos) is False:
+            return None
+        else:
+            return Move(current_pos, new_pos, move_is_a_capture)
 
         # Determine that either the current position or new position are within
         # a Palace.
@@ -470,15 +532,89 @@ class Board:
 
         # If the piece's movement rules are valid, return True
 
+    def check_palace_piece_movement(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos):
+        """
+        Checks the movement rules for a piece currently within the palace that is attempting to move within or move
+        outside the palace. Returns True if the movement is valid based on Palace movement
+        rules.
+        """
+        piece_label = piece_at_current_pos.get_label()
+        piece_movement_rules = piece_at_current_pos.get_possible_moves()
+
+        current_xy = current_pos.get_position_location()
+        new_xy = current_pos.get_position_location()
+
+        delta_x = new_xy[0] - current_xy[0]
+        delta_y = new_xy[1] - current_xy[1]
+        delta_xy = (delta_x, delta_y)
+
+
+        # if a Piece is a palace-confined piece attempting to move outside the palace, return False
+        if piece_at_current_pos.is_confined_to_palace():
+            if new_pos.check_if_palace_position() is False:
+                print("Move failed: Palace confined piece attempted to move outside the palace.")
+                return False
+
+        current_palace_rules = None
+        if current_pos.check_if_red_palace() is True:
+            current_palace_rules = Board.get_red_palace_move_rules()
+        elif current_pos.check_if_blue_palace() is True:
+            current_palace_rules = Board.get_blue_palace_move_rules()
+        else:
+            print("Board.check_palace_piece_movement() was called in error by validate_move_rules(), or Position data")
+            print("was not properly initialized.")
+            return False
+
+        allowed_new_positions = current_palace_rules[current_pos.get_position_location()]
+        if allowed_new_positions is None:
+            print("Board.check_palace_piece_movement() was called in error: allowed_new_positions was None")
+            return False
+
+        if piece_at_current_pos.is_confined_to_palace():
+            if new_pos.get_position_location() not in allowed_new_positions:
+                print("Move failed: a piece confined to the palace attempted to a move to a position that is")
+                print("incompatible with the Palace position's movement rules.")
+                return False
+            else:
+                return True
+        else:
+            # piece is not confined to palace
+            pass
+
+
+
+        # There are no pieces that can move diagonally
+
+        # if piece_at_current_pos.is_confined_to_palace() is False:
+
+
+
+    def check_non_palace_piece_movement(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos):
+        pass
+
+    def check_cannon_rules(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos, is_capture):
+        pass
+
+    # for rules that I suddenly remember that I haven't handled
+    def check_misc_rules(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos, is_capture):
+        pass
+
+    def detect_check(self, player: Player):
+        pass
+
+    def complete_move(self, next_move: Move):
+        """
+
+        :param next_move:
+        :return:
+        """
+
     @staticmethod
-    def get_red_palace_coordinates() -> dict:
+    def get_red_palace_move_rules() -> dict:
         """
         Static method that returns the (x,y) coordinates of the Red palace positions. Data structure returned
         is a dict[tuple]: (tuple(tuple))
         """
-
-        # we eventually can change this data struct to a dict so that we can use it
-        # to look up valid piece movements within the palace.
         red_palace_positions = {(4, 1): ((1, 0), (1, -1), (0, -1)),
                                 (5, 1): ((-1, 0), (0, -1), (1, 0)),
                                 (6, 1): ((-1, 0), (-1, -1), (0, -1)),
@@ -495,13 +631,11 @@ class Board:
         return red_palace_positions
 
     @staticmethod
-    def get_blue_palace_coordinates() -> dict:
+    def get_blue_palace_move_rules() -> dict:
         """
         Static method that returns the (x,y) coordinates of the Red palace positions. Data structure returned
         is dict[tuple]: (tuple(tuple))
         """
-        # we eventually can change this data struct to a dict so that we can use it
-        # to look up valid piece movements within the palace.
         red_palace_positions = {(4, 10): ((0, 1), (1, 1), (1, 0)),
                                 (5, 10): ((-1, 0), (0, 1), (1, 0)),
                                 (6, 10): ((-1, 0), (-1, 1), (0, 1)),
@@ -541,10 +675,6 @@ class Piece:
         self._confined_to_palace = None
         self._possible_moves = {(): (())}
 
-        # # unsure as to whether these fields will be useful later
-        # self._in_danger = None
-        # self._captured = None
-
     def get_player(self) -> Player:
         """
         Returns the Player object that the piece is controlled by.
@@ -556,6 +686,18 @@ class Piece:
         Returns the string label that identifies the piece type.
         """
         return self._label
+
+    def is_in_palace(self) -> bool:
+        """
+        Returns True if Piece is currently in Palace. Otherwise returns False.
+        """
+        return self._in_palace
+
+    def is_confined_to_palace(self) -> bool:
+        """
+        Returns a bool representing whether the piece is confined to the palace or not.
+        """
+        return self._confined_to_palace
 
     def get_starting_coordinates(self) -> tuple:
         """
@@ -587,15 +729,16 @@ class General(Piece):
 
         self._label = label
 
-        # start positions in (x,y) notation
-        # tuple(tuple(list('abc')))
-
-        self._red_start_coordinates = ((5, 2), None)
-        self._blue_start_coordinates = ((5, 9), None)
+        self._red_start_coordinates = ((5, 2), )
+        self._blue_start_coordinates = ((5, 9), )
 
         self._in_palace = True
         self._confined_to_palace = True
-        self._possible_moves = ()
+        self._possible_moves = {(1, 0): ((1, 0), ),
+                                (0, 1): ((0, 1), ),
+                                (-1, 0): ((-1, 0), ),
+                                (0, -1): ((0, -1), )
+                                }
 
 
 class Guard(Piece):
@@ -613,7 +756,11 @@ class Guard(Piece):
 
         self._in_palace = True
         self._confined_to_palace = True
-        self._possible_moves = ()
+        self._possible_moves = {(1, 0): ((1, 0), ),
+                                (0, 1): ((0, 1), ),
+                                (-1, 0): ((-1, 0), ),
+                                (0, -1): ((0, -1), )
+                                }
 
 
 class Chariot(Piece):
@@ -629,17 +776,16 @@ class Chariot(Piece):
         self._red_start_coordinates = ((1, 1), (9, 1))
         self._blue_start_coordinates = ((1, 10), (9, 10))
 
-        # _in_palace will be important for other pieces as they move to and from the palace, because being in the
-        # palace determines which moves are possible (i.e. for pieces where diagonal moves are not possible, being
-        # in the palace allows for diagonal movement).
-
         self._in_palace = False
-
         # _confined_to_palace will be important for the General and for Guards - when checking an attempted move from
         # a Guard or General, we can check if the piece is confined to the palace, determine if the new_pos is a
         # Palace position, and invalidate the move right then and there
         self._confined_to_palace = False
-        self._possible_moves = ()
+        self._possible_moves = {(1, 0): ((1, 0), ),
+                                (-1, 0): ((-1, 0), ),
+                                (0, 1): ((0, 1), ),
+                                (0, -1): ((0, -1), )
+                                }
 
 
 class Horse(Piece):
@@ -657,23 +803,6 @@ class Horse(Piece):
 
         self._in_palace = False
         self._confined_to_palace = False
-
-        # self._possible_moves
-        #
-        # Represented as a dict (tuple: tuple of tuples)
-        # The key is equal to cur_pos [col, row] - new_pos [col, row]
-        # Example for a horse moving from c3 to d5: c3 -> [2, 2], d5 -> [3,4], [2,2] - [3,4] = [-1, -2]
-        #
-        # The value is the "move sequence" that is valid from the new_pos to the old_os for that corresponding
-        # key. the rules for a horse are that it can move 1 space orthogonally and 1 diagonally. So to do that
-        # with the above key (-1, -2), the move sequence would be ((-1, -1), (0, -1)). This represents the following
-        # sequence of steps: x - 1 then y - 1 (arrived at a position, so check for piece here), then x - 0 and y - 1
-        # (we arrive at the cur_pos).
-        #
-        # Important to remember that these values are tracing a path from the new_pos back to the cur_pos.
-        # Also important to remember that we are operating in (X,Y) coordinate system - the first value in
-        # any point notation, whether we are representing a fixed point or the delta of that point, is always
-        # in (X, Y) notation.
 
         self._possible_moves = {
             (-1, -2): ((-1, -1), (0, -1)),
@@ -709,7 +838,14 @@ class Elephant(Piece):
 
         self._in_palace = False
         self._confined_to_palace = False
-        self._possible_moves = ()
+
+        # One point orthogonally followed by two points diagonally away from their starting point.
+
+        self._possible_moves = {(2, 3): ((0, 1), (1, 1), (1, 1)),
+                                (-2, 3): ((0, 1), (-1, 1), (-1, 1)),
+                                (2, -3): ((0, -1), (1, -1), (1, -1)),
+                                (-2, -3): ((0, -1), (-1, -1), (-1, -1))
+                                }
 
 
 class Cannon(Piece):
@@ -727,7 +863,11 @@ class Cannon(Piece):
 
         self._in_palace = False
         self._confined_to_palace = False
-        self._possible_moves = ()
+        self._possible_moves = {(1, 0): ((1, 0), ),
+                                (0, 1): ((0, 1), ),
+                                (-1, 0): ((-1, 0), ),
+                                (0, -1): ((0, -1), )
+                                }
 
 
 class Soldier(Piece):
@@ -745,7 +885,10 @@ class Soldier(Piece):
 
         self._in_palace = False
         self._confined_to_palace = False
-        self._possible_moves = ()
+        self._possible_moves = {(1, 0): ((1, 0), ),
+                                (0, 1): ((0, 1), ),
+                                (-1, 0): ((-1, 0), )
+                                }
 
 
 class Position:
@@ -764,7 +907,16 @@ class Position:
         """
 
         self._xy_pos = xy_position
-        self._is_palace_position = self.check_if_palace_position()
+
+        if self._xy_pos in Board.get_red_palace_move_rules():
+            self._is_red_palace_position = True
+        else:
+            self._is_red_palace_position = False
+
+        if self._xy_pos in Board.get_blue_palace_move_rules():
+            self._is_blue_palace_position = True
+        else:
+            self._is_blue_palace_position = False
 
         self._current_piece = None
 
@@ -778,9 +930,21 @@ class Position:
         If the (x,y) coordinate associated with the Position is found in the data structure in either of the two static
         methods, this method returns True. Otherwise, returns False.
         """
-        if self._xy_pos in Board.get_blue_palace_coordinates():
+        if self._is_red_palace_position is True or self._is_blue_palace_position is True:
             return True
-        elif self._xy_pos in Board.get_red_palace_coordinates():
+        else:
+            return False
+
+    def check_if_red_palace(self) -> bool:
+        """ Returns True if Position is a red palace position """
+        if self._is_red_palace_position is True:
+            return True
+        else:
+            return False
+
+    def check_if_blue_palace(self) -> bool:
+        """ Returns True if Position is a blue palace position """
+        if self._is_blue_palace_position is True:
             return True
         else:
             return False
@@ -815,21 +979,71 @@ class Position:
         self._current_piece = None
 
 
+class JanggiDisplay:
+
+    def __init__(self):
+
+        self.line1 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   %s : %s  "
+        self.line2 = "          ========================================          "
+        self.line3 = "        1 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 1        Current player pieces in uppercase."
+        self.line4 = "          |             |   \  /   |             |          Opposing player pieces in lowercase."
+        self.line5 = "        2 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 2        "
+        self.line6 = "          |             |   /  \   |             |          "
+        self.line7 = "        3 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 3        "
+        self.line8 = "          |                                      |          "
+        self.line9 = "        4 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 4        "
+        self.line10 = "          |                                      |         "
+        self.line11 = "        5 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 5        "
+        self.line12 = "          |                                      |          "
+        self.line13 = "        6 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 6        "
+        self.line14 = "          |                                      |          "
+        self.line15 = "        7 |--%s--%s--%s--%s--%s--%s--%s--%s--%s--| 7        "
+        self.line16 = "          |                                      |          "
+        self.line17 = "        8 |--%s--%s--%s-|%s\-%s-/%s|-%s--%s--%s--| 8        "
+        self.line18 = "          |             |   \  /   |             |          "
+        self.line19 = "        9 |--%s--%s--%s-|%s--%s--%s|-%s--%s--%s--| 9        "
+        self.line20 = "          |             |   /  \   |             |          "
+        self.line21 = "       10 |--%s--%s--%s-|%s/-%s-\%s|-%s--%s--%s--| 10       "
+        self.line22 = "          ========================================          "
+        self.line23 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   %s : %s  "
+
+        self.board_rows = [self.line1, self.line2, self.line3, self.line4, self.line5, self.line6,
+                           self.line7, self.line8, self.line9, self.line10, self.line11, self.line12,
+                           self.line13, self.line14, self.line15, self.line16, self.line17, self.line18,
+                           self.line19, self.line20, self.line21, self.line22, self.line23]
+
+    def draw(self, current_board):
+        print()
+        i = 0
+        for row in self.board_rows:
+            if "%" in row:
+                print(row % tuple(current_board[i]))
+                i += 1
+            else:
+                print(row)
+        print()
+
+    def display_test_board(self):
+
+        test_placements = ["0"], \
+                          ["ch", "el", "hr", "gu", "**", "gu", "el", "hr", "ch"], \
+                          ["**", "**", "**", "**", "ge", "**", "**", "**", "**"], \
+                          ["**", "ca", "**", "**", "**", "**", "**", "ca", "**"], \
+                          ["so", "**", "so", "**", "so", "**", "so", "**", "so"], \
+                          ["**", "**", "**", "**", "**", "**", "**", "**", "**"], \
+                          ["**", "**", "**", "**", "**", "**", "**", "**", "**"], \
+                          ["SO", "**", "SO", "**", "SO", "**", "SO", "**", "SO"], \
+                          ["**", "CA", "**", "**", "**", "**", "**", "CA", "**"], \
+                          ["**", "**", "**", "**", "GE", "**", "**", "**", "**"], \
+                          ["CH", "EL", "HR", "GU", "**", "GU", "EL", "HR", "CH"], \
+                          ["0"]
+
+        self.draw(test_placements)
+
+
 game = JanggiGame()
-gameboard = game.get_board()
 game.display_board()
 
-game.make_move("a9", "i10")
+game.make_move("e9", "e8")
 game.switch_turns()
 game.display_board()
-
-# print("testing board:")
-# for y in range(1, 11):
-#     for x in range(1, 10):
-#         position = gameboard.get_position((x, y))
-#         print(position)
-#         print(position.get_position_location())
-#         print(position.get_current_piece())
-#         if position.get_current_piece() is not None:
-#             print(position.get_current_piece().get_player().get_player_color())
-#         print()

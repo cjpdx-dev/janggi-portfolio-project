@@ -63,6 +63,7 @@ Elephants (3 points):
 
     Begin the game to the left and right of the guards.
 
+    Two points diagonally away from their starting point
     They move one point orthogonally followed by two
     points diagonally away from their starting point,
     ending on the opposite corner of a 2x3 rectangle. Like
@@ -364,6 +365,28 @@ Logical Flow of Game
                 Conclusion: I don't really have a conclusion for this yet. To me it makes the most sense to have a
 
     Turn Procedure (Ideas):
+
+            # self._possible_moves
+        #
+        # Represented as a dict (tuple: tuple of tuples)
+        # The key is equal to cur_pos [col, row] - new_pos [col, row]
+        # Example for a horse moving from c3 to d5: c3 -> [2, 2], d5 -> [3,4], [2,2] - [3,4] = [-1, -2]
+        #
+        # The value is the "move sequence" that is valid from the new_pos to the old_os for that corresponding
+        # key. the rules for a horse are that it can move 1 space orthogonally and 1 diagonally. So to do that
+        # with the above key (-1, -2), the move sequence would be ((-1, -1), (0, -1)). This represents the following
+        # sequence of steps: x - 1 then y - 1 (arrived at a position, so check for piece here), then x - 0 and y - 1
+        # (we arrive at the cur_pos).
+        #
+        # Important to remember that these values are tracing a path from the new_pos back to the cur_pos.
+        # Also important to remember that we are operating in (X,Y) coordinate system - the first value in
+        # any point notation, whether we are representing a fixed point or the delta of that point, is always
+        # in (X, Y) notation.
+
+
+        # _in_palace will be important for other pieces as they move to and from the palace, because being in the
+        # palace determines which moves are possible (i.e. for pieces where diagonal moves are not possible, being
+        # in the palace allows for diagonal movement).
 
     Post-Turn Procedure (Ideas):
 
