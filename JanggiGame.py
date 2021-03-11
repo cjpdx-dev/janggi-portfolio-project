@@ -596,6 +596,11 @@ class Board:
 
         temp_current_xy = current_xy
         for move in move_sequence:
+
+            # if we've arrived at the new_xy, don't check for a blocking piece
+            if temp_current_xy == new_xy:
+                break
+
             print(move)
             temp_current_xy = (move[0] + temp_current_xy[0], move[1] + temp_current_xy[1])
             print(temp_current_xy)
@@ -1169,7 +1174,7 @@ class JanggiDisplay:
 #
 # game = JanggiGame()
 # game.display_board()
-#
+
 #
 # game.make_move("a1", "a1")
 
