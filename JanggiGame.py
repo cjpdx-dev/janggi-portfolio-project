@@ -60,7 +60,7 @@ class JanggiGame:
             # complete the move
             if self._current_player.is_in_check() is True:
                 if self._game_board.detect_check(self._current_player) is False:
-
+                    pass
                 # make sure move gets them out of check
             elif self._current_player.is_in_check() is False:
                 pass
@@ -320,7 +320,7 @@ class Player:
         """
         return self._player_color
 
-    def is_taking_turn(self) -> bool:
+    def is_current_player(self) -> bool:
         """
         Returns the bool value that represents if the player is currently taking a turn or not
         """
@@ -477,41 +477,27 @@ class Board:
         # Check the current position
         current_pos: Position = self.get_position(xy_coord[0])
         piece_at_current_pos: Piece = current_pos.get_current_piece()
-        if piece_at_current_pos is None:
-            print("Move failed: There is no piece at the current position.")
-            return None
-        elif piece_at_current_pos.get_player().is_taking_turn() is False:
-            print("Move failed: Attempted to move a piece not controlled by the current player.")
+        if self.validate_current_position(piece_at_current_pos) is False:
             return None
         else:
             player_making_move = piece_at_current_pos.get_player()
 
-        # Check the new position
         new_pos: Position = self.get_position(xy_coord[1])
         piece_at_new_pos: Piece = new_pos.get_current_piece()
 
-        move_is_a_capture = False
-
-        if piece_at_new_pos is None:
-            move_is_a_capture = False
+        if self.validate_new_position(piece_at_new_pos) is False:
+            return None
         else:
-            if piece_at_new_pos.get_player().is_taking_turn() is False:
-                move_is_a_capture = True
-            elif piece_at_new_pos.get_player().is_taking_turn() is True:
-                print("Move failed: Attempted to move a piece to a position already controlled by the current player.")
-                return None
+            if piece_at_new_pos is None:
+                move_is_a_capture = False
             else:
-                print("ERROR: An unhandled exception occurred in Board.validate_move_rules()")
+                move_is_a_capture = True
 
-        # if piece in palace, call check_palace_piece_movement - if False return None, if Ture return a
-        # validated Move object
         if piece_at_current_pos.is_in_palace() is True:
             if self.check_palace_piece_movement(current_pos, new_pos, piece_at_current_pos, piece_at_new_pos) is False:
                 return None
             else:
                 return Move(current_pos, new_pos, move_is_a_capture)
-
-        # if piece not in palace, call check_non_palace_piece_movement and return None or Move object
         if self.check_non_palace_piece_movement(current_pos, new_pos, piece_at_current_pos, piece_at_new_pos) is False:
             return None
         else:
@@ -532,6 +518,26 @@ class Board:
 
         # If the piece's movement rules are valid, return True
 
+    @staticmethod
+    def validate_current_position(current_piece):
+        if current_piece is None:
+            print("Move failed: There is no piece at the current position.")
+            return False
+        elif current_piece.get_player().is_current_player() is False:
+            print("Move failed: Attempted to move a piece not controlled by the current player.")
+            return False
+        else:
+            return True
+
+    @staticmethod
+    def validate_new_position(piece_at_new_pos):
+        if piece_at_new_pos is not None:
+            if piece_at_new_pos.get_player().is_current_player() is True:
+                print("Move failed: Attempted to move a piece to a position already controlled by the current player.")
+                return False
+            else:
+                return True
+
     def check_palace_piece_movement(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos):
         """
         Checks the movement rules for a piece currently within the palace that is attempting to move within or move
@@ -548,8 +554,12 @@ class Board:
         delta_y = new_xy[1] - current_xy[1]
         delta_xy = (delta_x, delta_y)
 
+        if (delta_x - delta_y == 0) or (delta_x + delta_y == 0):
+            move_is_diagonal = True
+        else:
+            move_is_diagonal = False
 
-        # if a Piece is a palace-confined piece attempting to move outside the palace, return False
+        # If a Piece is a palace-confined piece attempting to move outside the palace, return False
         if piece_at_current_pos.is_confined_to_palace():
             if new_pos.check_if_palace_position() is False:
                 print("Move failed: Palace confined piece attempted to move outside the palace.")
@@ -566,11 +576,13 @@ class Board:
             return False
 
         allowed_new_positions = current_palace_rules[current_pos.get_position_location()]
+
         if allowed_new_positions is None:
             print("Board.check_palace_piece_movement() was called in error: allowed_new_positions was None")
             return False
 
         if piece_at_current_pos.is_confined_to_palace():
+            # Palace movement logic for palace confined pieces
             if new_pos.get_position_location() not in allowed_new_positions:
                 print("Move failed: a piece confined to the palace attempted to a move to a position that is")
                 print("incompatible with the Palace position's movement rules.")
@@ -578,7 +590,53 @@ class Board:
             else:
                 return True
         else:
-            # piece is not confined to palace
+            possible_movements = piece_at_current_pos.get_possible_moves()
+            if piece_label == "ch":
+                # MOVE THIS WHOLE THING TO A SEPARATE METHOD
+                if move_is_diagonal is True and new_pos.check_if_palace_position() is False:
+                    print("Move failed: Chariot attempted to move along a diagonal to a position outside of the Palace")
+                    return False
+                if move_is_diagonal is True and new_pos.check_if_palace_position() is True:
+                    try:
+                        delta_x_div_abs_x = delta_x / abs(delta_x)
+                        delta_y_div_abs_y = delta_y / abs(delta_y)
+                        delta_xy_div_abs = (delta_x_div_abs_x, delta_y_div_abs_y)
+                    except ZeroDivisionError:
+                        print("ERROR: delta_xy_div_abs_xy handled a non-diagonal move")
+                        return False
+
+                    if delta_xy_div_abs in allowed_new_positions:
+                        current_xy_copy = current_xy
+                        while current_xy_copy != new_xy:
+
+                            current_xy_copy = (current_xy_copy[0] + delta_x_div_abs_x,
+                                               current_xy_copy[1] + delta_y_div_abs_y)
+
+                            temp_position: Position = self.get_position(current_xy_copy)
+
+                            if temp_position is None:
+                                print("Move failed: could not track a path to the new position before hitting a ")
+                                print("non-existent position.")
+                                return False
+
+                            if delta_xy_div_abs not in current_palace_rules[temp_position.get_position_location()]:
+                                print("Move failed: could not track a path to the new position - palace movement")
+                                print("rules prevented the move.")
+                                return False
+
+                            elif temp_position.check_if_palace_position() is False:
+                                print("Move failed: Chariot left the palace while attempting a diagonal move.")
+                                return False
+
+                            elif temp_position.get_current_piece() is not None:
+                                print("Move failed: encountered a piece that blocks the path of the move.")
+
+                        return True
+
+            else:
+                # Palace movement for all other non-palace-confined pieces
+                pass
+
             pass
 
 
@@ -587,15 +645,15 @@ class Board:
 
         # if piece_at_current_pos.is_confined_to_palace() is False:
 
-
-
     def check_non_palace_piece_movement(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos):
         pass
 
     def check_cannon_rules(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos, is_capture):
         pass
 
-    # for rules that I suddenly remember that I haven't handled
+    def check_chariot_movement_inside_palace(self, current_pos, new_pos, piece_at_current_pos):
+        pass
+
     def check_misc_rules(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos, is_capture):
         pass
 
@@ -603,11 +661,7 @@ class Board:
         pass
 
     def complete_move(self, next_move: Move):
-        """
-
-        :param next_move:
-        :return:
-        """
+        pass
 
     @staticmethod
     def get_red_palace_move_rules() -> dict:
@@ -650,6 +704,12 @@ class Board:
                                 }
 
         return red_palace_positions
+
+    @staticmethod
+    def get_palace_diagonals():
+
+        palace_diagonals = ((1, 1), (-1, -1), (1, -1), (-1, 1), (2, 2), (-2, -2), (2, -2), (-2, 2))
+        return palace_diagonals
 
 
 class Piece:
@@ -1040,10 +1100,10 @@ class JanggiDisplay:
 
         self.draw(test_placements)
 
-
-game = JanggiGame()
-game.display_board()
-
-game.make_move("e9", "e8")
-game.switch_turns()
-game.display_board()
+#
+# game = JanggiGame()
+# game.display_board()
+#
+# game.make_move("e9", "e8")
+# game.switch_turns()
+# game.display_board()
