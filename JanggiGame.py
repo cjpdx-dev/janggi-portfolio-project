@@ -262,6 +262,10 @@ class JanggiGame:
         drawable_data.append([player_1_label, str(self._player_1.get_points())])
         return drawable_data
 
+    def get_game_board(self):
+        """ For testing only. Returns the current game board """
+        return self._game_board
+
 
 class Player:
     """
@@ -475,8 +479,6 @@ class Board:
         piece_at_current_pos: Piece = current_pos.get_current_piece()
         if self.validate_current_position(piece_at_current_pos) is False:
             return None
-        else:
-            player_making_move = piece_at_current_pos.get_player()
 
         new_pos: Position = self.get_position(xy_coord[1])
         piece_at_new_pos: Piece = new_pos.get_current_piece()
@@ -537,11 +539,6 @@ class Board:
         delta_y = new_xy[1] - current_xy[1]
         delta_xy = (delta_x, delta_y)
 
-        if (delta_x - delta_y == 0) or (delta_x + delta_y == 0):
-            move_is_diagonal = True
-        else:
-            move_is_diagonal = False
-
         # If a Piece is a palace-confined piece attempting to move outside the palace, return False
         if piece_at_current_pos.is_confined_to_palace():
             if new_pos.check_if_palace_position() is False:
@@ -563,33 +560,48 @@ class Board:
             else:
                 return True
         else:
-            possible_movements = piece_at_current_pos.get_possible_moves()
             if piece_label == "ch":
-                if self.check_chariot_movement_inside_palace(current_pos, new_pos, move_is_diagonal) is True:
+                if self.check_chariot_movement_inside_palace(current_pos, new_pos) is True:
+                    return True
+            elif piece_label == "ca":
+                if self.check_cannon_movement_inside_palace(current_pos, new_pos) is True:
+                    return True
+                else:
+                    return False
+            elif piece_label == "so":
+                if self.check_soldier_movement_inside_palace(current_pos, new_pos) is True:
                     return True
                 else:
                     return False
             else:
-                # Palace movement for all other non-palace-confined pieces
-                pass
+                if self.check_non_palace_piece_movement(current_pos, new_pos) is True:
+                    return True
+                else:
+                    return False
 
     def check_non_palace_piece_movement(self, current_pos, new_pos):
 
-        piece_at_current_pos = current_pos.get_current_piece()
-        piece_label = piece_at_current_pos.get_label()
+        current_pos: Position = current_pos
+        current_xy = current_pos.get_position_location()
+
+        piece_at_current_pos: Piece = current_pos.get_current_piece()
+        piece_label: str = piece_at_current_pos.get_label()
         piece_movement_rules = piece_at_current_pos.get_possible_moves()
 
-        current_xy = current_pos.get_position_location()
+        new_pos: Position = new_pos
         new_xy = new_pos.get_position_location()
+
         delta_x = new_xy[0] - current_xy[0]
         delta_y = new_xy[1] - current_xy[1]
         delta_xy = (delta_x, delta_y)
 
-        print(delta_xy)
+        move_is_diagonal = self.check_if_move_is_diagonal(delta_x, delta_y)
+        if move_is_diagonal:
+            print("Move failed: No piece outside of the palace can move purely diagonally.")
+            return False
 
         if delta_xy in piece_movement_rules:
             move_sequence = piece_movement_rules[delta_xy]
-            print(move_sequence)
         else:
             print("Move failed: move was not possible based on ", piece_label.upper(), " movement rules.")
             return False
@@ -606,47 +618,53 @@ class Board:
                     return False
                 else:
                     return True
-
-        print(move_sequence)
         return True
 
-    def check_cannon_rules(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos, is_capture):
-        pass
+    def check_chariot_movement_inside_palace(self, current_pos, new_pos) -> bool:
 
-    def check_chariot_movement_inside_palace(self, current_pos, new_pos, move_is_diagonal):
+        # new_pos and current_pos are reinitialized for the sake of type hinting
+        # can't do this in method signature because we're working with a single file
+        # and Position is the last class of the file.
 
-        piece_at_current_pos = current_pos.get_current_piece()
-        piece_movement_rules = piece_at_current_pos.get_possible_moves()
-
+        current_pos: Position = current_pos
         current_xy = current_pos.get_position_location()
+
+        new_pos: Position = new_pos
         new_xy = new_pos.get_position_location()
 
         delta_x = new_xy[0] - current_xy[0]
         delta_y = new_xy[1] - current_xy[1]
-        # delta_xy = (delta_x, delta_y)
+        delta_xy = (delta_x, delta_y)
+
+        move_is_diagonal = self.check_if_move_is_diagonal(delta_x, delta_y)
+        delta_xy_div_abs = None
+        if move_is_diagonal is True:
+            delta_xy_div_abs = self.get_delta_xy_div_abs_xy(delta_x, delta_y)
+            if delta_xy_div_abs is None:
+                print("ERROR: get_delta_xy_div_abs_xy() handled a non-diagonal move")
+                return False
+
+        piece_at_current_pos: Piece = current_pos.get_current_piece()
+        piece_movement_rules = piece_at_current_pos.get_possible_moves()
 
         current_palace_rules = self.get_palace_rules(current_pos)
-        allowed_movements = current_palace_rules[current_xy]
+        palace_movement_rules = current_palace_rules[current_xy]
 
         if move_is_diagonal is True and new_pos.check_if_palace_position() is False:
             print("Move failed: Chariot attempted to move along a diagonal to a position outside of the Palace")
             return False
 
+        if move_is_diagonal is False and new_pos.check_if_palace_position() is False:
+            print("Move failed: a purely diagonal move can not occur for any piece outside of the palace")
+
         if move_is_diagonal is True and new_pos.check_if_palace_position() is True:
-            try:
-                delta_x_div_abs_x = delta_x / abs(delta_x)
-                delta_y_div_abs_y = delta_y / abs(delta_y)
-                delta_xy_div_abs = (delta_x_div_abs_x, delta_y_div_abs_y)
-            except ZeroDivisionError:
-                print("ERROR: delta_xy_div_abs_xy handled a non-diagonal move")
-                return False
 
-            if delta_xy_div_abs in allowed_movements:
+            if delta_xy_div_abs in palace_movement_rules:
                 current_xy_copy = current_xy
-                while current_xy_copy != new_xy:
 
-                    current_xy_copy = (current_xy_copy[0] + delta_x_div_abs_x,
-                                       current_xy_copy[1] + delta_y_div_abs_y)
+                while current_xy_copy != new_xy:
+                    current_xy_copy = (current_xy_copy[0] + delta_xy_div_abs[0],
+                                       current_xy_copy[1] + delta_xy_div_abs[1])
 
                     temp_position: Position = self.get_position(current_xy_copy)
 
@@ -664,14 +682,51 @@ class Board:
                         print("Move failed: Chariot left the palace while attempting a diagonal move.")
                         return False
 
-                    elif temp_position.get_current_piece() is not None:
+                    elif temp_position.get_current_piece() is not None and current_xy_copy != new_xy:
                         print("Move failed: Encountered a piece that blocks the path of the move.")
+                        return False
 
                 return True
 
             else:
-                print("The Chariot's movement within the palace violated the Palace rules")
+                print("Move failed: the Chariot's movement within the palace violated the Palace rules")
                 return False
+
+        if move_is_diagonal is False and new_pos.check_if_palace_position() is True:
+            for movement in piece_movement_rules:
+                print(movement)
+            if delta_xy_div_abs in palace_movement_rules:
+                current_xy_copy = current_xy
+                while current_xy_copy != new_xy:
+                    pass
+
+    @staticmethod
+    def check_chariot_movement_outside_palace(current_pos, new_pos):
+
+        current_pos: Position = current_pos
+        current_xy = current_pos.get_position_location()
+
+        new_pos: Position = new_pos
+        new_xy = new_pos.get_position_location()
+
+        delta_x = new_xy[0] - current_xy[0]
+        delta_y = new_xy[1] - current_xy[1]
+        # delta_xy = (delta_x, delta_y)
+
+        move_is_diagonal = Board.check_if_move_is_diagonal(delta_x, delta_y)
+        if move_is_diagonal:
+            print("Move failed: Chariot cannot move diagonally outside of the Palace")
+            return False
+
+
+    def check_cannon_movement_inside_palace(self, current_pos, new_pos, is_capture):
+        pass
+
+    def check_cannon_movement_outside_palace(self, current_pos, new_pos, is_capture):
+        pass
+
+    def check_solider_movement_inside_palace(self, current_pos, new_pos):
+        pass
 
     def check_misc_rules(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos, is_capture):
         pass
@@ -770,6 +825,24 @@ class Board:
             return None
 
     @staticmethod
+    def check_if_move_is_diagonal(delta_x, delta_y):
+        if (delta_x - delta_y == 0) or (delta_x + delta_y == 0):
+            return True
+        else:
+            return True
+
+    @staticmethod
+    def get_delta_xy_div_abs_xy(delta_x, delta_y):
+        try:
+            delta_x_div_abs_x = delta_x / abs(delta_x)
+            delta_y_div_abs_y = delta_y / abs(delta_y)
+            delta_xy_div_abs = (delta_x_div_abs_x, delta_y_div_abs_y)
+            return delta_xy_div_abs
+        except ZeroDivisionError:
+            print("ERROR: delta_xy_div_abs_xy handled a non-diagonal move")
+            return None
+
+    @staticmethod
     def get_palace_diagonals():
 
         palace_diagonals = ((1, 1), (-1, -1), (1, -1), (-1, 1), (2, 2), (-2, -2), (2, -2), (-2, 2))
@@ -779,10 +852,11 @@ class Board:
 class Piece:
     """
     The Piece class represents a piece object - in practice all Piece objects will exist as
-    one of the child classes associated with this parent Piece class. Each piece
-    will have be associated with a controlling player, possess a label, and have fields
+    one of the child classes associated with this parent Piece class.
+
+    Each piece will have be associated with a controlling player, possess a label, and have fields
     determining its possible start positions, move rules, whether it is in or confined to
-    the palace, as well as additional fields like _in_danger or _captured.
+    the palace.
     """
 
     def __init__(self, player: Player, label: str):
@@ -864,6 +938,9 @@ class General(Piece):
                                 (0, -1): ((0, -1), )
                                 }
 
+        self._in_check = False
+        self._in_checkmate = False
+
 
 class Guard(Piece):
     """
@@ -889,7 +966,9 @@ class Guard(Piece):
 
 class Chariot(Piece):
     """
-    A child class of Piece that represents a Chariot.
+    A child class of Piece that represents a Chariot. Chariot's have a different data structure
+    for possible moves - instead of a dict with a key as a vector and a value of move sequences,
+    Chariots have a tuple that holds a range of tuples.
     """
     def __init__(self, player, label):
         super().__init__(player, label)
@@ -901,15 +980,17 @@ class Chariot(Piece):
         self._blue_start_coordinates = ((1, 10), (9, 10))
 
         self._in_palace = False
-        # _confined_to_palace will be important for the General and for Guards - when checking an attempted move from
-        # a Guard or General, we can check if the piece is confined to the palace, determine if the new_pos is a
-        # Palace position, and invalidate the move right then and there
+
         self._confined_to_palace = False
-        self._possible_moves = {(1, 0): ((1, 0), ),
-                                (-1, 0): ((-1, 0), ),
-                                (0, 1): ((0, 1), ),
-                                (0, -1): ((0, -1), )
-                                }
+
+        self._possible_moves = ((0, tuple(range(1, 10))),
+                                (tuple((range(1, 9))), 0),
+                                (0, tuple(range(-9, 0))),
+                                (tuple((range(-8, -0))), 0)
+                                )
+
+    def get_possible_moves(self) -> tuple:
+        return self._possible_moves
 
 
 class Horse(Piece):
@@ -963,8 +1044,6 @@ class Elephant(Piece):
         self._in_palace = False
         self._confined_to_palace = False
 
-        # One point orthogonally followed by two points diagonally away from their starting point.
-
         self._possible_moves = {(2, 3): ((0, 1), (1, 1), (1, 1)),
                                 (-2, 3): ((0, 1), (-1, 1), (-1, 1)),
                                 (2, -3): ((0, -1), (1, -1), (1, -1)),
@@ -974,7 +1053,9 @@ class Elephant(Piece):
 
 class Cannon(Piece):
     """
-    A child class of Piece that represents a Cannon.
+    A child class of Piece that represents a Cannon. Cannon's have a different data structure
+    for possible moves - instead of a dict with a key as a vector and a value of move sequences,
+    Chariots have a tuple that holds a range of tuples.
     """
     def __init__(self, player, label):
         super().__init__(player, label)
@@ -987,11 +1068,14 @@ class Cannon(Piece):
 
         self._in_palace = False
         self._confined_to_palace = False
-        self._possible_moves = {(1, 0): ((1, 0), ),
-                                (0, 1): ((0, 1), ),
-                                (-1, 0): ((-1, 0), ),
-                                (0, -1): ((0, -1), )
-                                }
+        self._possible_moves = ((0, tuple(range(1, 10))),
+                                (tuple((range(1, 9))), 0),
+                                (0, tuple(range(-9, 0))),
+                                (tuple((range(-8, -0))), 0)
+                                )
+
+    def get_possible_moves(self) -> tuple:
+        return self._possible_moves
 
 
 class Soldier(Piece):
@@ -1152,3 +1236,5 @@ class JanggiDisplay:
             else:
                 print(row)
         print()
+
+

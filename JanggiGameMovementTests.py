@@ -2,14 +2,11 @@ import unittest
 from JanggiGame import JanggiGame
 
 
-class MoveGeneralTests(unittest.TestCase):
-    def test_something(self):
-        self.assertEqual(True, False)
-
-
-class MoveGuardTests(unittest.TestCase):
-    def test_something(self):
-        self.assertEqual(True, False)
+class MoveGeneralAndGuardsTests(unittest.TestCase):
+    def test_basic_movement(self):
+        game = JanggiGame()
+        game.display_board()
+        self.assertTrue(game.make_move())
 
 
 class MoveHorseTests(unittest.TestCase):
@@ -44,7 +41,7 @@ class MoveHorseTests(unittest.TestCase):
         game.make_move("h10", "g8")
         game.display_board()
 
-        game.make_move("h2", "g3")
+        self.assertFalse(game.make_move("h2", "g3"))
 
 
 class MoveChariotTests(unittest.TestCase):
