@@ -1098,10 +1098,10 @@ class JanggiDisplay:
 
         self.draw(test_placements)
 
-
-game = JanggiGame()
-game.display_board()
-
-game.make_move("e9", "e8")
-game.switch_turns()
-game.display_board()
+#
+# game = JanggiGame()
+# game.display_board()
+#
+# game.make_move("e9", "e8")
+# game.switch_turns()
+# game.display_board()
