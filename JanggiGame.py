@@ -829,7 +829,7 @@ class Board:
         if (delta_x - delta_y == 0) or (delta_x + delta_y == 0):
             return True
         else:
-            return True
+            return False
 
     @staticmethod
     def get_delta_xy_div_abs_xy(delta_x, delta_y):
