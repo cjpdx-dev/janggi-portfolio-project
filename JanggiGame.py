@@ -53,6 +53,11 @@ class JanggiGame:
         else:
             xy_move = self.convert_algebraic_to_xy((current_pos, new_pos))
 
+        if self._game_board.check_for_pass(xy_move) is True:
+            print("Passing turn.")
+            self.switch_turns()
+            return True
+
         next_move = self._game_board.validate_move_rules(xy_move)
         if next_move is not None:
             # if _current_player was in check before make_move(), make sure the move gets them out of check
@@ -83,10 +88,6 @@ class JanggiGame:
         Checks that the converted (x,y) notation is valid (i.e. the position exists on the board).
         Does NOT check if the made cannot be made of other reasons.
         """
-        if input_positions[0] == input_positions[1]:
-            print("ERROR: The given positions were identical.")
-            return False
-
         for position in input_positions:
             if len(position) not in range(2, 4):
                 print("ERROR: Invalid position format.")
@@ -694,6 +695,21 @@ class Board:
 
         print("Move completed.")
 
+    def check_for_pass(self, xy_move):
+        current_position: Position = self.get_position(xy_move[0])
+        piece_at_current_position = current_position.get_current_piece()
+        controlling_player = piece_at_current_position.get_player()
+
+        if controlling_player.is_current_player():
+            if xy_move[0] == xy_move[1]:
+                print("Pass detected")
+                return True
+            else:
+                return False
+        else:
+            return False
+
+
     @staticmethod
     def get_red_palace_move_rules() -> dict:
         """
@@ -1150,10 +1166,13 @@ class JanggiDisplay:
 
         self.draw(test_placements)
 
-
+#
 # game = JanggiGame()
 # game.display_board()
 #
+#
+# game.make_move("a1", "a1")
+
 # game.make_move("e9", "e8")
 # game.display_board()
 # game.make_move("e8", "f9")
