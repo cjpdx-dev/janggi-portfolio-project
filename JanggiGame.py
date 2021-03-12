@@ -786,8 +786,37 @@ class Board:
     def check_cannon_movement_outside_palace(self, current_pos, new_pos, is_capture):
         pass
 
-    def check_solider_movement_inside_palace(self, current_pos, new_pos):
-        pass
+    def check_soldier_movement_inside_palace(self, current_pos, new_pos):
+        current_pos: Position = current_pos
+        current_xy = current_pos.get_position_location()
+
+        new_pos: Position = new_pos
+        new_xy = new_pos.get_position_location()
+
+        delta_x = new_xy[0] - current_xy[0]
+        delta_y = new_xy[1] - current_xy[1]
+        delta_xy = (delta_x, delta_y)
+
+        move_is_diagonal = self.check_if_move_is_diagonal(delta_x, delta_y)
+        delta_xy_div_abs = None
+        if move_is_diagonal is True:
+            delta_xy_div_abs = self.get_delta_xy_div_abs_xy(delta_x, delta_y)
+            if delta_xy_div_abs is None:
+                print("ERROR: get_delta_xy_div_abs_xy() handled a non-diagonal move")
+                return False
+
+        piece_at_current_pos: Piece = current_pos.get_current_piece()
+        piece_movement_rules = piece_at_current_pos.get_possible_moves()
+
+        current_palace_rules = self.get_palace_rules(current_pos)
+        current_position_rules = current_palace_rules[current_xy]
+
+        if new_pos.check_if_palace_position() is False:
+            if delta_xy in piece_movement_rules:
+                return True
+            else:
+                return False
+
 
     def detect_check(self, player: Player):
         pass

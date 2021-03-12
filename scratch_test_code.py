@@ -47,9 +47,9 @@ game.make_move("c10", "d10")
 game.display_board()
 game.make_move("f9", "e8")
 game.display_board()
-# game_board = game.get_game_board()
+game.make_move("f9", "e9")
+game.display_board()
+game.make_move("d10", "c10")
+game.display_board()
 
-# player = game.get_current_player()
-#
-# chariot: Chariot = Chariot(player, "ch")
-# print(chariot.get_possible_moves())
+
