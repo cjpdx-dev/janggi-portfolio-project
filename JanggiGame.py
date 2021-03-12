@@ -574,6 +574,7 @@ class Board:
             else:
                 return True
 
+        print(piece_label)
         if piece_at_current_pos.is_confined_to_palace() is False and current_pos.check_if_palace_position() is True:
             if piece_label == "ch":
                 if move_is_diagonal is True:
@@ -600,7 +601,10 @@ class Board:
                     return False
 
             else:
-                self.check_non_palace_piece_movement(current_pos, new_pos)
+                pass
+
+        else:
+            self.check_non_palace_piece_movement(current_pos, new_pos)
 
         print("Reached the end of check_palace_piece_movement() with no return. Returning False")
         return False
