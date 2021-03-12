@@ -976,8 +976,8 @@ class Board:
             return False
 
         valid_delta = False
+        piece_found = False
         for movement_direction in piece_movement_rules:
-
             if movement_direction[0] == 0:
                 for y in movement_direction[1]:
                     if (movement_direction[0], y) == delta_xy:
@@ -993,28 +993,29 @@ class Board:
             return False
         else:
             # check for piece orthogonal to cannon in direction of its movement
-            print("Current delta xy: ", delta_xy)
-            print("Current xy: ", current_xy)
+            temp_xy = current_xy
 
             if delta_x != 0:
                 delta_x_div_abs_x = int(delta_x / abs(delta_x))
             else:
                 delta_x_div_abs_x = 0
-
             if delta_y != 0:
                 delta_y_div_abs_y = int(delta_y / abs(delta_y))
             else:
                 delta_y_div_abs_y = 0
 
-            next_position_xy = (current_xy[0] + delta_x_div_abs_x, current_xy[1] + delta_y_div_abs_y)
-            next_position: Position = self.get_position(next_position_xy)
-            piece_at_next_position = next_position.get_current_piece()
+            while temp_xy != new_xy:
 
-            if piece_at_next_position is None:
-                print("Move failed: Cannon did not have another piece orthogonal to it in the direction of its move.")
-                return False
-            else:
-                return True
+                temp_xy = (temp_xy[0] + delta_x_div_abs_x, temp_xy[1] + delta_y_div_abs_y)
+                temp_position: Position = self.get_position(temp_xy)
+                piece_at_temp_position = temp_position.get_current_piece()
+
+                if piece_at_temp_position is None:
+                    continue
+                else:
+                    return True
+
+            return False
 
     def check_soldier_movement_inside_palace(self, current_pos, new_pos) -> bool:
         """

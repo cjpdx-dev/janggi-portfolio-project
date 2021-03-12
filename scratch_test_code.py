@@ -22,7 +22,14 @@ game.display_board()
 game.make_move("c7", "c6")
 game.display_board()
 
+game.make_move("c1", "d3")
+game.display_board()
 
+game.make_move("b10", "d7")
+game.display_board()
+
+game.make_move("b3", "e3")
+game.display_board()
 
 
 
