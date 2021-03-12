@@ -6,19 +6,21 @@ from JanggiGame import Chariot
 
 game: JanggiGame = JanggiGame()
 game.display_board()
-gameboard = game.get_game_board()
-player1 = game.get_current_player()
-player2 = game.get_next_player()
+# gameboard = game.get_game_board()
+# player1 = game.get_current_player()
+# player2 = game.get_next_player()
+#
+# gen_position = gameboard.find_position_of_general(player1)
+# print(gen_position.get_position_location())
+#
+# opposing_positions = gameboard.find_all_opposing_positions(player2)
+# for position in opposing_positions:
+#     print(position.get_position_location())
+#
+# game.refresh_game_state()
 
-gen_position = gameboard.find_position_of_general(player1)
-print(gen_position.get_position_location())
-
-opposing_positions = gameboard.find_all_opposing_positions(player2)
-for position in opposing_positions:
-    print(position.get_position_location())
-
-game.refresh_game_state()
-
+game.make_move("c7", "c6")
+game.display_board()
 
 
 
