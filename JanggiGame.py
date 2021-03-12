@@ -1102,14 +1102,16 @@ class Board:
 
         if valid_piece_found is True:
             temp_xy = temp_position.get_position_location()
+
             while temp_position != self.get_position(new_xy):
                 temp_xy = (temp_xy[0] + delta_x_div_abs_x, temp_xy[1] + delta_y_div_abs_y)
-
                 temp_position = self.get_position(temp_xy)
                 if temp_position.get_current_piece() is not None:
                     if temp_position.get_current_piece() != new_pos.get_current_piece():
                         print("There was a blocking piece.")
                         return False
+
+
 
             return True
 
