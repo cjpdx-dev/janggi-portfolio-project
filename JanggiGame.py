@@ -191,6 +191,7 @@ class JanggiGame:
         Accesses the current player's data to determine if the player is in check and returns True
         or False accordingly. This method is user-facing so it must handle invalid input from the user.
         """
+        print(player_color)
         if player_color == "BLUE":
             return self._player_1.is_in_check()
         elif player_color == "RED":
