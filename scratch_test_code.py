@@ -17,7 +17,8 @@ opposing_positions = gameboard.find_all_opposing_positions(player2)
 for position in opposing_positions:
     print(position.get_position_location())
 
-game.detect_check(player1)
+game.refresh_game_state()
+
 
 
 
