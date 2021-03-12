@@ -180,9 +180,13 @@ class JanggiGame:
         """
 
         if self.detect_check(self.get_next_player()) is True:
+            print("detected check")
             self.get_next_player().set_check_status(True)
 
         self.switch_turns()
+
+        print("Next player check status: ", self.get_next_player().is_in_check())
+        print("Current player check status: ", self.get_current_player().is_in_check())
 
     def detect_out_of_check(self, current_player, move) -> bool:
         """
@@ -230,6 +234,7 @@ class JanggiGame:
         print("Check scenario not found.")
         print("*************** DONE DETECTING CHECK ***************")
         print()
+
         return False
 
     def is_in_check(self, player_color: str) -> bool:
@@ -1055,7 +1060,7 @@ class Board:
             return False
 
         valid_delta = False
-        piece_found = False
+
         for movement_direction in piece_movement_rules:
             if movement_direction[0] == 0:
                 for y in movement_direction[1]:
@@ -1070,30 +1075,44 @@ class Board:
         if valid_delta is False:
             print("Move failed: move was not possible based on Cannon's movement rules.")
             return False
+
+        if delta_x != 0:
+            delta_x_div_abs_x = int(delta_x / abs(delta_x))
         else:
-            # check for piece orthogonal to cannon in direction of its movement
-            temp_xy = current_xy
+            delta_x_div_abs_x = 0
+        if delta_y != 0:
+            delta_y_div_abs_y = int(delta_y / abs(delta_y))
+        else:
+            delta_y_div_abs_y = 0
 
-            if delta_x != 0:
-                delta_x_div_abs_x = int(delta_x / abs(delta_x))
+        valid_piece_found = False
+        temp_xy = current_xy
+        temp_xy = (temp_xy[0] + delta_x_div_abs_x, temp_xy[1] + delta_y_div_abs_y)
+        temp_position: Position = self.get_position(temp_xy)
+
+        while temp_position != self.get_position(new_xy):
+
+            if temp_position.get_current_piece() is not None:
+                if temp_position.get_current_piece() is not self.get_position(new_xy):
+                    valid_piece_found = True
+                    break
             else:
-                delta_x_div_abs_x = 0
-            if delta_y != 0:
-                delta_y_div_abs_y = int(delta_y / abs(delta_y))
-            else:
-                delta_y_div_abs_y = 0
-
-            while temp_xy != new_xy:
-
                 temp_xy = (temp_xy[0] + delta_x_div_abs_x, temp_xy[1] + delta_y_div_abs_y)
-                temp_position: Position = self.get_position(temp_xy)
-                piece_at_temp_position = temp_position.get_current_piece()
+                temp_position = self.get_position(temp_xy)
 
-                if piece_at_temp_position is None or temp_xy == new_xy:
-                    continue
-                else:
-                    return True
+        if valid_piece_found is True:
+            temp_xy = temp_position.get_position_location()
+            while temp_position != self.get_position(new_xy):
+                temp_xy = (temp_xy[0] + delta_x_div_abs_x, temp_xy[1] + delta_y_div_abs_y)
 
+                temp_position = self.get_position(temp_xy)
+                if temp_position.get_current_piece() != new_pos.get_current_piece():
+                    print("There was a blocking piece.")
+                    return False
+
+            return True
+
+        else:
             return False
 
     def check_soldier_movement_inside_palace(self, current_pos, new_pos) -> bool:
