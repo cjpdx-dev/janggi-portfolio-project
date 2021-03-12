@@ -77,26 +77,22 @@ class JanggiGame:
         next_move = self._game_board.validate_move_rules(xy_move)
 
         if next_move is not None:
-
-            can_complete_move = True
-
-            # # make sure player moved themselves out of check
+            # can_complete_move = False
+            #
             # if self._current_player.is_in_check() is True:
-            #     if self.detect_out_of_check(self._current_player, next_move) is False:
+            #     if self.detect_in_or_out_of_check(self._current_player, next_move) is False:
             #         self._current_player.set_check_status(False)
             #         can_complete_move = True
             #
-            # # make sure player didn't put themselves in check
             # if self._current_player.is_in_check() is False:
-            #     if self.detect_out_of_check(self._current_player, next_move) is False:
-            #         can_complete_move = True
-
-            if can_complete_move is True:
-                self._game_board.complete_move(next_move)
-                self.refresh_game_state()
-                return True
-            else:
-                return False
+            #     if self.detect_in_or_out_of_check(self._current_player, next_move) is False:
+            #       can_complete_move = True
+            self._game_board.complete_move(next_move)
+            self.refresh_game_state()
+            return True
+            # if can_complete_move is True:
+            # else:
+            #     return False
 
         else:
             return False
@@ -188,7 +184,7 @@ class JanggiGame:
         print("Next player check status: ", self.get_next_player().is_in_check())
         print("Current player check status: ", self.get_current_player().is_in_check())
 
-    def detect_out_of_check(self, current_player, move) -> bool:
+    def detect_in_or_out_of_check(self, current_player, move) -> bool:
         """
         Detects whether the current player is still in check based on the Move object that has been
         verified to be valid. If the move removes check or sustains an out of check situation,
@@ -198,7 +194,16 @@ class JanggiGame:
         :param move: Object.Move
         :return: bool
         """
-        return True
+        pass
+        # save = self
+        # game_copy = self
+        # gameboard_copy = self.get_game_board()
+        # gameboard_copy.complete_move(move)
+        #
+        # if game_copy.detect_check(game_copy.get_current_player()) is True:
+        #     return True
+        # else:
+        #     return False
 
     def detect_check(self, next_player) -> bool:
         """
@@ -219,17 +224,12 @@ class JanggiGame:
         for opposing_position in opposing_player_positions:
             opposing_location = opposing_position.get_position_location()
             opposing_location_to_player_general = (opposing_location, gen_position_xy)
-            print()
-            print("************ CHECK RESULT *************")
-            print(opposing_location_to_player_general)
             if self._game_board.validate_move_rules(opposing_location_to_player_general) is not None:
                 print("Check scenario found: ", next_player.get_player_color(), " in check!")
                 print("*************** DONE DETECTING CHECK ***************")
                 print()
                 return True
             else:
-                print("************ END CHECK RESULT *************")
-                print()
                 continue
         print("Check scenario not found.")
         print("*************** DONE DETECTING CHECK ***************")
@@ -362,6 +362,10 @@ class JanggiGame:
     def get_game_board(self):
         """ For testing only. Returns the current game board """
         return self._game_board
+
+    def set_game_board(self, new_game_board):
+        self._game_board = new_game_board
+
 
 
 class Player:

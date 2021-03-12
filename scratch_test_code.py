@@ -43,6 +43,39 @@ game.display_board()
 game.make_move("e3", "e6")
 game.display_board()
 
+game.make_move("h8", "c8")
+game.display_board()
+
+game.make_move("d3", "e5")
+game.display_board()
+
+game.make_move("c8", "c4")
+game.display_board()
+
+game.make_move("e5", "c4")
+game.display_board()
+
+game.make_move("i10", "i8")
+game.display_board()
+
+game.make_move("g4", "f4")
+game.display_board()
+
+game.make_move("i8", "f8")
+game.display_board()
+
+game.make_move("g3", "h5")
+game.display_board()
+
+game.make_move("h10", "g8")
+game.display_board()
+
+game.make_move("e6", "e3")
+game.display_board()
+
+
+
+
 
 # # game.make_move("c10", "d8")
 # # game.display_board()
