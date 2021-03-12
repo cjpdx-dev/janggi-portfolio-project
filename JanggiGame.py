@@ -211,20 +211,25 @@ class JanggiGame:
         opposing_player_positions = self._game_board.find_all_opposing_positions(opposing_player)
 
         print("*************** DETECTING CHECK ***************")
+        print()
         for opposing_position in opposing_player_positions:
             opposing_location = opposing_position.get_position_location()
             opposing_location_to_player_general = (opposing_location, gen_position_xy)
+            print()
             print("************ CHECK RESULT *************")
             print(opposing_location_to_player_general)
             if self._game_board.validate_move_rules(opposing_location_to_player_general) is not None:
                 print("Check scenario found: ", next_player.get_player_color(), " in check!")
                 print("*************** DONE DETECTING CHECK ***************")
+                print()
                 return True
             else:
                 print("************ END CHECK RESULT *************")
+                print()
                 continue
         print("Check scenario not found.")
         print("*************** DONE DETECTING CHECK ***************")
+        print()
         return False
 
     def is_in_check(self, player_color: str) -> bool:
