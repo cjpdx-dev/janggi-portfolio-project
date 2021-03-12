@@ -494,7 +494,7 @@ class Board:
             else:
                 is_capture = True
 
-        if piece_at_current_pos.is_in_palace() is True:
+        if current_pos.check_if_palace_position() is True:
             if self.check_palace_piece_movement(current_pos, new_pos) is False:
                 return None
             else:
@@ -552,6 +552,8 @@ class Board:
         delta_y = new_xy[1] - current_xy[1]
         delta_xy = (delta_x, delta_y)
 
+        move_is_diagonal = self.check_if_move_is_diagonal(delta_x, delta_y)
+
         if piece_at_current_pos.is_confined_to_palace():
             if new_pos.check_if_palace_position() is False:
                 print("Move failed: Palace confined piece attempted to move outside the palace.")
@@ -574,10 +576,16 @@ class Board:
 
         if piece_at_current_pos.is_confined_to_palace() is False and current_pos.check_if_palace_position() is True:
             if piece_label == "ch":
-                if self.check_chariot_movement_inside_palace(current_pos, new_pos) is True:
-                    return True
+                if move_is_diagonal is True:
+                    if self.check_chariot_movement_inside_palace(current_pos, new_pos) is True:
+                        return True
+                    else:
+                        return False
                 else:
-                    return False
+                    if self.check_chariot_movement_outside_palace(current_pos, new_pos) is True:
+                        return True
+                    else:
+                        return False
 
             elif piece_label == "ca":
                 if self.check_cannon_movement_inside_palace(current_pos, new_pos) is True:
@@ -663,7 +671,9 @@ class Board:
         piece_movement_rules = piece_at_current_pos.get_possible_moves()
 
         current_palace_rules = self.get_palace_rules(current_pos)
-        palace_movement_rules = current_palace_rules[current_xy]
+        current_position_rules = current_palace_rules[current_xy]
+        print(current_palace_rules)
+        print(current_position_rules)
 
         if move_is_diagonal is True and new_pos.check_if_palace_position() is False:
             print("Move failed: Chariot attempted to move along a diagonal to a position outside of the Palace")
@@ -674,21 +684,23 @@ class Board:
 
         if move_is_diagonal is True and new_pos.check_if_palace_position() is True:
 
-            if delta_xy_div_abs in palace_movement_rules:
-                current_xy_copy = current_xy
+            if delta_xy_div_abs in current_position_rules:
+                temp_xy = current_xy
 
-                while current_xy_copy != new_xy:
-                    current_xy_copy = (current_xy_copy[0] + delta_xy_div_abs[0],
-                                       current_xy_copy[1] + delta_xy_div_abs[1])
+                while temp_xy != new_xy:
+                    temp_position: Position = self.get_position(temp_xy)
+                    temp_movement_rules = current_palace_rules[temp_xy]
 
-                    temp_position: Position = self.get_position(current_xy_copy)
+                    next_xy = (int(temp_xy[0] + delta_xy_div_abs[0]),
+                               int(temp_xy[1] + delta_xy_div_abs[1]))
+                    next_position = self.get_position(next_xy)
 
                     if temp_position is None:
                         print("Move failed: could not track a path to the new position before hitting a ")
                         print("non-existent position.")
                         return False
 
-                    if delta_xy_div_abs not in current_palace_rules[temp_position.get_position_location()]:
+                    if delta_xy_div_abs not in temp_movement_rules:
                         print("Move failed: could not track a path to the new position - palace movement")
                         print("rules prevented the move.")
                         return False
@@ -697,9 +709,13 @@ class Board:
                         print("Move failed: Chariot left the palace while attempting a diagonal move.")
                         return False
 
-                    elif temp_position.get_current_piece() is not None and current_xy_copy != new_xy:
+                    elif next_position.get_current_piece() is not None and next_xy != new_xy:
                         print("Move failed: Encountered a piece that blocks the path of the move.")
                         return False
+
+                    temp_xy = (int(temp_xy[0] + delta_xy_div_abs[0]),
+                               int(temp_xy[1] + delta_xy_div_abs[1]))
+
 
                 return True
 
@@ -710,10 +726,13 @@ class Board:
         if move_is_diagonal is False and new_pos.check_if_palace_position() is True:
             for movement in piece_movement_rules:
                 print(movement)
-            if delta_xy_div_abs in palace_movement_rules:
-                current_xy_copy = current_xy
-                while current_xy_copy != new_xy:
+            if delta_xy_div_abs in current_position_rules:
+                temp_xy = current_xy
+                while temp_xy != new_xy:
                     pass
+
+        if move_is_diagonal is False and new_pos.check_if_palace_position() is False:
+            return self.check_chariot_movement_outside_palace()
 
     @staticmethod
     def check_chariot_movement_outside_palace(current_pos, new_pos):
@@ -757,6 +776,7 @@ class Board:
             return True
 
     def check_cannon_movement_inside_palace(self, current_pos, new_pos, is_capture):
+        # Not implemented.
         pass
 
     def check_cannon_movement_outside_palace(self, current_pos, new_pos, is_capture):
@@ -765,10 +785,10 @@ class Board:
     def check_solider_movement_inside_palace(self, current_pos, new_pos):
         pass
 
-    def check_misc_rules(self, current_pos, new_pos, piece_at_current_pos, piece_at_new_pos, is_capture):
+    def detect_check(self, player: Player):
         pass
 
-    def detect_check(self, player: Player):
+    def detect_checkmate(self, player: Player):
         pass
 
     @staticmethod
@@ -783,7 +803,6 @@ class Board:
             new_position.remove_piece_from_position()
             new_position.assign_piece_to_empty_position(piece_at_old_position)
             old_position.remove_piece_from_position()
-
         else:
             new_position.assign_piece_to_empty_position(piece_at_old_position)
             old_position.remove_piece_from_position()
