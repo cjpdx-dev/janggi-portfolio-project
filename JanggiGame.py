@@ -19,8 +19,8 @@ class JanggiGame:
 
         self._game_state = None                                     # Initialize the game state
 
-        self._player_1: Player = Player("BLUE")                             # Initialize the players
-        self._player_2: Player = Player("RED")
+        self._player_1: Player = Player("blue")                             # Initialize the players
+        self._player_2: Player = Player("red")
         self._current_player: Player = None
 
         self._game_board = Board(self._player_1, self._player_2)    # Initialize the game board
@@ -192,9 +192,9 @@ class JanggiGame:
         or False accordingly. This method is user-facing so it must handle invalid input from the user.
         """
         print(player_color)
-        if player_color == "BLUE":
+        if player_color == "blue":
             return self._player_1.is_in_check()
-        elif player_color == "RED":
+        elif player_color == "red":
             return self._player_2.is_in_check()
         else:
             print("ERROR: Invalid player color was passed to function JanggiGame.is_in_check()")
@@ -301,7 +301,7 @@ class JanggiGame:
 
 class Player:
     """
-    This class represents the Player. A Player is represented by one of two colors (RED or BLUE).
+    This class represents the Player. A Player is represented by one of two colors (red or blue).
     A player can be in or out of check, in or out of checkmate, and is either taking its turn or
     not taking its turn. The primary data structure within a Player is stored in the list
     called _player_pieces. Upon initialization of a player, all the Piece objects needed to start
@@ -349,7 +349,7 @@ class Player:
 
     def get_player_color(self) -> str:
         """
-        Returns the player's color (RED or BLUE)
+        Returns the player's color (red or blue)
         """
         return self._player_color
 
@@ -1119,15 +1119,15 @@ class Piece:
 
     def get_starting_coordinates(self) -> tuple:
         """
-        Returns the starting positions for the piece, based on the piece's color ("BLUE" or "RED")
+        Returns the starting positions for the piece, based on the piece's color ("blue" or "red")
         :return: A tuple of tuples. If the piece is a General, the second tuple will be None.
         """
-        if self._controlling_player.get_player_color() == "BLUE":
+        if self._controlling_player.get_player_color() == "blue":
             return self._blue_start_coordinates
-        elif self._controlling_player.get_player_color() == "RED":
+        elif self._controlling_player.get_player_color() == "red":
             return self._red_start_coordinates
         else:
-            print("ERROR: A player other than BLUE or RED was detected.")
+            print("ERROR: A player other than blue or red was detected.")
 
     def get_possible_moves(self) -> dict:
         """
@@ -1314,13 +1314,13 @@ class Soldier(Piece):
         self._confined_to_palace = False
 
         # needs to have red moves and blue moves
-        if player.get_player_color() == "RED":
+        if player.get_player_color() == "red":
             self._possible_moves = {(1, 0): ((1, 0), ),
                                     (0, 1): ((0, 1), ),
                                     (-1, 0): ((-1, 0), )
                                     }
 
-        elif player.get_player_color() == "BLUE":
+        elif player.get_player_color() == "blue":
             self._possible_moves = {(1, 0): ((1, 0), ),
                                     (0, -1): ((0, -1), ),
                                     (-1, 0): ((-1, 0), )
