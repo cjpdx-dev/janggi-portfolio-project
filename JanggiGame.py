@@ -823,7 +823,20 @@ class Board:
             return False
         else:
             # check for piece orthogonal to cannon in direction of its movement
-            next_position_xy = (current_xy[0] + delta_x, current_xy[1] + delta_y)
+            print("Current delta xy: ", delta_xy)
+            print("Current xy: ", current_xy)
+
+            if delta_x != 0:
+                delta_x_div_abs_x = int(delta_x / abs(delta_x))
+            else:
+                delta_x_div_abs_x = 0
+
+            if delta_y != 0:
+                delta_y_div_abs_y = int(delta_y / abs(delta_y))
+            else:
+                delta_y_div_abs_y = 0
+
+            next_position_xy = (current_xy[0] + delta_x_div_abs_x, current_xy[1] + delta_y_div_abs_y)
             next_position: Position = self.get_position(next_position_xy)
             piece_at_next_position = next_position.get_current_piece()
 
@@ -864,7 +877,6 @@ class Board:
                 return True
             else:
                 return False
-
 
     def detect_check(self, player: Player):
         pass
