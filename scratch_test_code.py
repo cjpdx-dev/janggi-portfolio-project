@@ -31,7 +31,17 @@ game.display_board()
 game.make_move("b3", "e3")
 game.display_board()
 
+game.make_move("c10", "d8")
+game.display_board()
 
+game.make_move("h1", "g3")
+game.display_board()
+
+game.make_move("e7", "e6")
+game.display_board()
+
+game.make_move("e3", "e6")
+game.display_board()
 
 
 # # game.make_move("c10", "d8")
