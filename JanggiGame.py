@@ -1,6 +1,7 @@
 #
 # Author:       Chris Jacobs
 # Date:         2/25/2021
+# Submitted:    3/11/2021
 # Assignment:   CS 162 Portfolio Assignment - Janggi
 #
 # Description:  A CLI version of Janggi, aka Korean Chess. Please view README.md and janggi_notes.txt
@@ -27,7 +28,7 @@ class JanggiGame:
         self._display = JanggiDisplay()
         self.start_game()
 
-    def start_game(self):
+    def start_game(self) -> None:
         """
         Starts the game by setting Player 1 as the current player and setting the game state
         as "UNFINISHED"
@@ -38,9 +39,24 @@ class JanggiGame:
 
     def make_move(self, current_pos: str, new_pos: str) -> bool:
         """
-        Makes a move, first by validating the old position and then the new position. Gets
-        the Piece at the old position and checks if it belongs to the next_player. Then checks
-        the new position to see if it is either empty or occupied by the opposing player. Finally,
+        Checks the game state - if unfinished, make move fails. Otherwise, validates the move input
+        in algebraic form and converts that form into (x,y) coordinates. Checks if the turn is a pass,
+        if True, switch turns and return True. Validates the move based on the (x,y) notation
+        and the pieces movement rules. If move is valid, self._game_board.validate_move_rules() returns
+        a Move object, otherwise returns none and this method returns False.
+
+        If a Move object is returned from self._game_board.validate_move_rules(), the method
+        confirms that the move removed the check status of the current player if they were
+        in check, and confirms that the move did not put them into check. Otherwise, this method
+        returns False.
+
+        If the move can be completed, this method passes the Move object the current
+        Board object which completes the move, calls refresh_game_state, and then
+        returns True.
+
+        :param current_pos:
+        :param new_pos:
+        :return:
         """
 
         print("Attempting ", current_pos, " to ", new_pos)
@@ -90,6 +106,8 @@ class JanggiGame:
         """
         Checks that the converted (x,y) notation is valid (i.e. the position exists on the board).
         Does NOT check if the made cannot be made of other reasons.
+        :param input_positions: tuple
+        :return: bool
         """
         for position in input_positions:
             if len(position) not in range(2, 4):
@@ -124,6 +142,8 @@ class JanggiGame:
         """
         Converts the user's algebraic notation for representing piece position into (x,y) coordinate
         notation that the Board object can parse.
+        :param algebraic_positions:
+        :return: tuple
         """
         positions_list = []
         for position in algebraic_positions:
@@ -152,19 +172,37 @@ class JanggiGame:
         xy_move_notation = (tuple(positions_list[0]), tuple(positions_list[1]))
         return xy_move_notation
 
-    def refresh_game_state(self):
+    def refresh_game_state(self) -> None:
+        """
+        Detects check for the next player. If the next player is in check, sets that
+        player's check status to True, otherwise, does nothing and then calls switch_turns()
+        :return: None
         """
 
-        """
         if self.detect_check(self.get_next_player()) is True:
             self.get_next_player().set_check_status(True)
 
         self.switch_turns()
 
-    def detect_out_of_check(self, current_player, next_move):
+    def detect_out_of_check(self, current_player, move) -> bool:
+        """
+        Detects whether the current player is still in check based on the Move object that has been
+        verified to be valid. If the move removes check or sustains an out of check situation,
+        returns True. Otherwise, returns False.
+
+        :param current_player: Object.Player
+        :param move: Object.Move
+        :return: bool
+        """
         return True
 
-    def detect_check(self, next_player):
+    def detect_check(self, next_player) -> bool:
+        """
+        Detects whether the current player has made a move that places the next player into
+        a check scenario. Returns False if no check scenario is found, otherwise returns True.
+        :param next_player: Object.Player
+        :return: bool
+        """
 
         opposing_player = self.get_current_player()
 
@@ -179,20 +217,22 @@ class JanggiGame:
 
             if self._game_board.validate_move_rules(opposing_location_to_player_general) is not None:
                 print("Check scenario found: ", next_player.get_player_color(), " in check!")
+                print("*************** DONE DETECTING CHECK ***************")
                 return True
             else:
                 continue
-
         print("Check scenario not found.")
-
         print("*************** DONE DETECTING CHECK ***************")
+        return False
 
     def is_in_check(self, player_color: str) -> bool:
         """
         Accesses the current player's data to determine if the player is in check and returns True
         or False accordingly. This method is user-facing so it must handle invalid input from the user.
+        :param player_color: str
+        :return: bool
         """
-        print(player_color)
+
         if player_color == "blue":
             return self._player_1.is_in_check()
         elif player_color == "red":
@@ -200,7 +240,12 @@ class JanggiGame:
         else:
             print("ERROR: Invalid player color was passed to function JanggiGame.is_in_check()")
 
-    def detect_checkmate(self, player_to_scan):
+    def detect_checkmate(self, player_to_scan) -> bool:
+        """
+        Detects a checkmate scenario.
+        :param player_to_scan:
+        :return: bool
+        """
         pass
 
     def set_game_state(self, game_state: str):
@@ -208,6 +253,8 @@ class JanggiGame:
         Sets the game state to the string argument passed to the function. Does not need to
         screen for an invalid string, because this function is only called by refresh_game_state()
         which only passes valid strings.
+        :param game_state:
+        :return: bool
         """
         self._game_state = game_state
 
@@ -227,6 +274,7 @@ class JanggiGame:
     def get_next_player(self):
         """
         Returns the Player object whose turn is next
+        :return: Object.Player
         """
         if self._current_player == self._player_1:
             return self._player_2
@@ -235,11 +283,13 @@ class JanggiGame:
         else:
             print("ERROR: A current player was not initialized. Returning None.")
 
-    def switch_turns(self):
+    def switch_turns(self) -> None:
         """
         Swaps which player is designated as the current player, and alters both Player's
         set_taking_turn field accordingly.
+        :return: None
         """
+
         if self._current_player is self._player_1:
             self._player_1.set_as_current_player(False)
             self._player_2.set_as_current_player(True)
@@ -253,16 +303,18 @@ class JanggiGame:
         else:
             print("ERROR: Attempted to switch turns but _current_player is set to None")
 
-    def display_board(self):
+    def display_board(self) -> None:
         """
         Draws a CLI representation of the game board.
+        :return: None
         """
         self._display.draw(self.get_drawable_board_data())
 
-    def get_drawable_board_data(self):
+    def get_drawable_board_data(self) -> list:
         """
         Iterates through each position of the game board and returns a 2D list
         of positions and their pieces. ** indicates the absence of a Piece.
+        :return: list
         """
         player_2_label = self._player_2.get_player_color()
         if self._current_player != self._player_2:
@@ -313,8 +365,8 @@ class Player:
         """
         Initializes the Player object. Accepts a string that represents the player color, which
         is a unique identifier for the player.
+        :param color: str
         """
-
         self._player_color = color
         self._points = 0
 
@@ -345,48 +397,59 @@ class Player:
         """
         Returns a list of all the player's pieces - this list does not represent which pieces
         are still in play, just a list of all of a player's pieces that the player starts with.
+        :return: list
         """
         return self._player_pieces
 
     def get_player_color(self) -> str:
         """
-        Returns the player's color (red or blue)
+        Returns the player's color ("red" or "blue")
+        :return: str
         """
         return self._player_color
 
     def is_current_player(self) -> bool:
         """
         Returns the bool value that represents if the player is currently taking a turn or not
+        :return: bool
         """
         return self._is_current_player
 
-    def set_as_current_player(self, turn_status: bool):
+    def set_as_current_player(self, turn_status: bool) -> None:
         """
         Sets the turn status to either True (player currently taking turn) or False (turn is over)
+        :param turn_status: bool
+        :return: None
         """
         self._is_current_player = turn_status
 
     def is_in_check(self) -> bool:
         """
         Returns the Player's "in check" state
+        :return: bool
         """
         return self._in_check
 
-    def set_check_status(self, check_state: bool):
+    def set_check_status(self, check_state: bool) -> None:
         """
         Sets the "in check" state of the Player to True or False
+        :param check_state: bool
+        :return: None
         """
         self._in_check = check_state
 
     def is_in_checkmate(self) -> bool:
         """
         Returns the Player's "in checkmate" state.
+        :return: None
         """
         return self._in_checkmate
 
-    def set_checkmate_status(self, checkmate_status: bool):
+    def set_checkmate_status(self, checkmate_status: bool) -> None:
         """
         Sets the Player's "in checkmate" state to True or False
+        :param checkmate_status: bool
+        :return: None
         """
         self._in_checkmate = checkmate_status
 
@@ -425,18 +488,31 @@ class Move:
             self._player_being_captured = None
 
     def get_player(self) -> Player:
-        """ Returns the current player associated with the move """
+        """
+        Returns the current player associated with the move
+        :return: Object.Player
+        """
         return self._player_moving
 
     def get_old_position(self):
-        """ Returns the old position associated with the move """
+        """
+        Returns the old position associated with the move
+        :return: Object.Position
+        """
         return self._old_position
 
     def get_new_position(self):
-        """ Returns the new position associated with the Move"""
+        """
+        Returns the new position associated with the Move
+        :return: Object.Position
+        """
         return self._new_position
 
-    def move_is_a_capture(self):
+    def move_is_a_capture(self) -> bool:
+        """
+        Returns whether the move is a capture
+        :return: bool
+        """
         return self._is_capture
 
 
@@ -449,6 +525,8 @@ class Board:
     def __init__(self, player1: Player, player2: Player):
         """
         Initializes the Board object. Accepts two Player objects as arguments.
+        :param player1: Object.Player
+        :param player2: Object.Player
         """
         self._player1 = player1
         self._player2 = player2
@@ -459,22 +537,25 @@ class Board:
 
         self._pieces_that_can_move_in_palace = ("ge", "gu", "ch", "ca", "so")
 
-    def initialize_empty_board(self):
+    def initialize_empty_board(self) -> None:
         """
         Initializes an empty board using a dictionary and populates that dictionary with Position
         objects, such that a generated xy coordinate represents the key and the Position object
         represents that key's value.
+        :return: None
         """
         for y in range(1, 11):
             for x in range(1, 10):
                 self._board[(x, y)] = Position((x, y))
 
-    def place_player_pieces(self):
+    def place_player_pieces(self) -> None:
         """
         For each player, gets all pieces assigned to that player by calling Player.get_all_pieces().
         Then assigns them to the correct Position object on the Board, based on that Piece's data and
         the color of the controlling player.
+        :return: None
         """
+
         players = [self._player1, self._player2]
 
         for player in players:
@@ -494,19 +575,25 @@ class Board:
         """
         Checks board positions and returns a Position object if a matching xy_coord key value is found.
         Otherwise, returns None.
+        :param xy_coord:
+        :return: Object.Position or None
         """
         if xy_coord in self._board:
             return self._board[xy_coord]
         else:
             return None
 
-    def validate_move_rules(self, xy_coord: tuple):
+    def validate_move_rules(self, xy_coord: tuple) -> Move or None:
         """
         Determine if the move is valid based on piece placement and piece movement ability.
         Accepts a tuple that represents (current_position, new_position). These positions have already
         been verified to exist on the board before this method can be called. The move itself is validated
         by this method. Returns a Move object if the move is shown to be possible, otherwise returns None.
+
+        :param xy_coord: tuple
+        :return: Object.Move or None
         """
+
         # Check the current position
         current_pos: Position = self.get_position(xy_coord[0])
         piece_at_current_pos: Piece = current_pos.get_current_piece()
@@ -521,6 +608,7 @@ class Board:
 
         if self.validate_new_position(piece_at_new_pos) is False:
             return None
+
         else:
             if piece_at_new_pos is None:
                 is_capture = False
@@ -532,17 +620,22 @@ class Board:
                 return None
             else:
                 return Move(current_pos, new_pos, is_capture)
+
         else:
             if piece_label == "ch":
+
                 if self.check_chariot_movement_outside_palace(current_pos, new_pos) is True:
                     return Move(current_pos, new_pos, is_capture)
                 else:
                     return None
+
             elif piece_label == "ca":
+
                 if self.check_cannon_movement_outside_palace(current_pos, new_pos, is_capture) is True:
                     return Move(current_pos, new_pos, is_capture)
                 else:
                     return None
+
             else:
                 if self.check_non_palace_piece_movement(current_pos, new_pos) is True:
                     return Move(current_pos, new_pos, is_capture)
@@ -550,7 +643,13 @@ class Board:
                     return None
 
     @staticmethod
-    def validate_current_position(current_piece):
+    def validate_current_position(current_piece) -> bool:
+        """
+        Static method that validates there exists a piece at the current position and that he piece
+        is controlled by the current player.
+        :param current_piece:
+        :return: bool
+        """
 
         if current_piece is None:
             print("Move failed: There is no piece at the current position.")
@@ -562,7 +661,13 @@ class Board:
             return True
 
     @staticmethod
-    def validate_new_position(piece_at_new_pos):
+    def validate_new_position(piece_at_new_pos) -> bool:
+        """
+        Validates whether there the piece at the new position exists and whether it belongs to the current
+        player. If either are False, returns False, otherwise returns True.
+        :param piece_at_new_pos:
+        :return: bool
+        """
         if piece_at_new_pos is not None:
             if piece_at_new_pos.get_player().is_current_player() is True:
                 print("Move failed: Attempted to move a piece to a position already controlled by the current player.")
@@ -570,11 +675,14 @@ class Board:
             else:
                 return True
 
-    def check_palace_piece_movement(self, current_pos, new_pos, is_capture):
+    def check_palace_piece_movement(self, current_pos, new_pos, is_capture) -> bool:
         """
         Checks the movement rules for a piece currently within the palace that is attempting to move within or move
-        outside the palace. Returns True if the movement is valid based on Palace movement
-        rules.
+        outside the palace. Returns True if the movement is valid based on Palace movement rules
+        :param current_pos: Object.Position
+        :param new_pos: Object.Position
+        :param is_capture: bool
+        :return: bool
         """
         piece_at_current_pos = current_pos.get_current_piece()
         piece_label = piece_at_current_pos.get_label()
@@ -608,7 +716,6 @@ class Board:
             else:
                 return True
 
-        print(piece_label)
         if piece_at_current_pos.is_confined_to_palace() is False and current_pos.check_if_palace_position() is True:
             if piece_label == "ch":
                 if move_is_diagonal is True:
@@ -640,7 +747,14 @@ class Board:
         print("Reached the end of check_palace_piece_movement() with no return. Returning False")
         return False
 
-    def check_non_palace_piece_movement(self, current_pos, new_pos):
+    def check_non_palace_piece_movement(self, current_pos, new_pos) -> bool:
+        """
+        Checks whether the movement of a piece that is not in the palace is valid. Returns True
+        if the movement is valid and False if the movement is invalid.
+        :param current_pos: Object.Position
+        :param new_pos: Object.Position
+        :return: bool
+        """
         current_pos: Position = current_pos
         current_xy = current_pos.get_position_location()
 
@@ -679,6 +793,13 @@ class Board:
         return True
 
     def check_chariot_movement_inside_palace(self, current_pos, new_pos) -> bool:
+        """
+        Validates a Chariot move if the Chariot move occurs within the Palace. Returns
+        True if the move is valid, otherwise returns False
+        :param current_pos: Object.Position
+        :param new_pos: Object.Position
+        :return: bool
+        """
 
         # new_pos and current_pos are reinitialized for the sake of type hinting
         # can't do this in method signature because we're working with a single file
@@ -769,7 +890,14 @@ class Board:
             return self.check_chariot_movement_outside_palace()
 
     @staticmethod
-    def check_chariot_movement_outside_palace(current_pos, new_pos):
+    def check_chariot_movement_outside_palace(current_pos, new_pos) -> bool:
+        """
+        Validates whether a Chariot move that occurs outside of the Palace is valid. Returns True
+        if the movement is valid, otherwise returns False.
+        :param current_pos: Object.Position
+        :param new_pos: Object.Position
+        :return: bool
+        """
         current_pos: Position = current_pos
         current_xy = current_pos.get_position_location()
 
@@ -812,8 +940,17 @@ class Board:
         # Not implemented.
         pass
 
-    def check_cannon_movement_outside_palace(self, current_pos, new_pos, is_capture):
-
+    def check_cannon_movement_outside_palace(self, current_pos, new_pos, is_capture) -> bool:
+        """
+        Checks to see if a cannon moving outside the palace is valid, including whether the move
+        is valid and whether the move condition of a player in front of the Cannon is valid. Also
+        detects whether the Cannon is attempting to capture another Cannon, at which point the method
+        returns False. Returns True if the movement is valid, otherwise returns False
+        :param current_pos: Object.Position
+        :param new_pos: Object.Position
+        :param is_capture: bool
+        :return: bool
+        """
         current_pos: Position = current_pos
         current_xy = current_pos.get_position_location()
 
@@ -879,7 +1016,14 @@ class Board:
             else:
                 return True
 
-    def check_soldier_movement_inside_palace(self, current_pos, new_pos):
+    def check_soldier_movement_inside_palace(self, current_pos, new_pos) -> bool:
+        """
+        Checks to see if a solider's movement inside the palace is valid. Returns True
+        if valid and False otherwise. Currently only can allow Solider to leave Palace.
+        :param current_pos: Object.Position
+        :param new_pos: Object.Positon
+        :return: bool
+        """
         current_pos: Position = current_pos
         current_xy = current_pos.get_position_location()
 
@@ -912,7 +1056,11 @@ class Board:
                 return False
 
     def find_position_of_general(self, player):
-
+        """
+        Finds the position of a Player's general.
+        :param player: Object.Player
+        :return: Object.Position
+        """
         # TODO: there's a better way to do this - have a field in Player that updates the position
         # of the general each time the player moves the general. Don't have time to implement
         # that right now so we are just brute forcing it here.
@@ -938,9 +1086,9 @@ class Board:
 
     def find_all_opposing_positions(self, opposing_player) -> list:
         """
-
-        :param opposing_player:
-        :return:
+        Finds all positions for a player and returns them in a list of Position objects.
+        :param opposing_player: Object.Player
+        :return: list
         """
         opposing_positions = []
         for position in self._board:
@@ -958,7 +1106,13 @@ class Board:
         return opposing_positions
 
     @staticmethod
-    def complete_move(next_move: Move):
+    def complete_move(next_move: Move) -> None:
+        """
+        Completes the move by unpacking a validated Move's data and implementing
+        it by calling on the each Position's methods.
+        :param next_move: Object.Move
+        :return: None
+        """
         old_position = next_move.get_old_position()
         piece_at_old_position = old_position.get_current_piece()
 
@@ -975,7 +1129,13 @@ class Board:
 
         print("Move completed.")
 
-    def check_for_pass(self, xy_move):
+    def check_for_pass(self, xy_move: tuple) -> bool:
+        """
+        Determines if a given move is a pass. If the move is a pass, returns True,
+        otherwise returns False
+        :param xy_move: tuple
+        :return: bool
+        """
         current_position: Position = self.get_position(xy_move[0])
         piece_at_current_position = current_position.get_current_piece()
 
@@ -998,6 +1158,7 @@ class Board:
         """
         Static method that returns the (x,y) coordinates of the Red palace positions. Data structure returned
         is a dict[tuple]: (tuple(tuple))
+        :return: dict
         """
         red_palace_positions = {(4, 1): ((0, 1), (1, 1), (1, 0)),
                                 (5, 1): ((-1, 0), (0, 1), (1, 0)),
@@ -1019,7 +1180,9 @@ class Board:
         """
         Static method that returns the (x,y) coordinates of the Red palace positions. Data structure returned
         is dict[tuple]: (tuple(tuple))
+        :return: dict
         """
+
         blue_palace_positions = {(4, 10): ((1, 0), (1, -1), (0, -1)),
                                  (5, 10): ((-1, 0), (0, -1), (1, 0)),
                                  (6, 10): ((-1, 0), (-1, -1), (0, -1)),
@@ -1037,6 +1200,12 @@ class Board:
 
     @staticmethod
     def get_palace_rules(current_pos):
+        """
+        Static method that returns the palace rules for the given Position object, based on
+        if that Position object is a Blue or Red palace.
+        :param current_pos: Object.Position
+        :return: bool
+        """
         if current_pos.check_if_red_palace() is True:
             return Board.get_red_palace_move_rules()
         elif current_pos.check_if_blue_palace() is True:
@@ -1046,14 +1215,28 @@ class Board:
             return None
 
     @staticmethod
-    def check_if_move_is_diagonal(delta_x, delta_y):
+    def check_if_move_is_diagonal(delta_x: int, delta_y: int) -> bool:
+        """
+        Determine's if a move is a diagonal move based on the delta of x and y. Returns Ture
+        if move is diagonal, otherwise returns False.
+        :param delta_x: tuple
+        :param delta_y: tuple
+        :return: bool
+        """
         if (delta_x - delta_y == 0) or (delta_x + delta_y == 0):
             return True
         else:
             return False
 
     @staticmethod
-    def get_delta_xy_div_abs_xy(delta_x, delta_y):
+    def get_delta_xy_div_abs_xy(delta_x: int, delta_y: int) -> tuple or None:
+        """
+        Returns the change of two points divided by the absolute value of those points.
+        Returns None if a ZeroDivisionError occurs.
+        :param delta_x: int
+        :param delta_y: int
+        :return: tuple or None
+        """
         try:
             delta_x_div_abs_x = delta_x / abs(delta_x)
             delta_y_div_abs_y = delta_y / abs(delta_y)
@@ -1062,13 +1245,6 @@ class Board:
         except ZeroDivisionError:
             print("ERROR: delta_xy_div_abs_xy handled a non-diagonal move")
             return None
-
-    @staticmethod
-    def get_palace_diagonals():
-
-        palace_diagonals = ((1, 1), (-1, -1), (1, -1), (-1, 1), (2, 2), (-2, -2), (2, -2), (-2, 2))
-        return palace_diagonals
-
 
 class Piece:
     """
@@ -1097,31 +1273,35 @@ class Piece:
     def get_player(self) -> Player:
         """
         Returns the Player object that the piece is controlled by.
+        :return: Object.Player
         """
         return self._controlling_player
 
     def get_label(self) -> str:
         """
         Returns the string label that identifies the piece type.
+        :return: str
         """
         return self._label
 
     def is_in_palace(self) -> bool:
         """
         Returns True if Piece is currently in Palace. Otherwise returns False.
+        :return: bool
         """
         return self._in_palace
 
     def is_confined_to_palace(self) -> bool:
         """
         Returns a bool representing whether the piece is confined to the palace or not.
+        :return: bool
         """
         return self._confined_to_palace
 
     def get_starting_coordinates(self) -> tuple:
         """
         Returns the starting positions for the piece, based on the piece's color ("blue" or "red")
-        :return: A tuple of tuples. If the piece is a General, the second tuple will be None.
+        :return: A tuple of tuples, or None if a player other than blue or red was detected.
         """
         if self._controlling_player.get_player_color() == "blue":
             return self._blue_start_coordinates
@@ -1133,6 +1313,7 @@ class Piece:
     def get_possible_moves(self) -> dict:
         """
         Returns the possible movements for the Piece.
+        :return: dict
         """
         return self._possible_moves
 
@@ -1210,6 +1391,11 @@ class Chariot(Piece):
                                 )
 
     def get_possible_moves(self) -> tuple:
+        """
+        Same as Parent version of get_possible_moves() but overridden for documentation purposes
+        to identify different type being returned.
+        :return: tuple of tuples
+        """
         return self._possible_moves
 
 
@@ -1273,9 +1459,9 @@ class Elephant(Piece):
 
 class Cannon(Piece):
     """
-    A child class of Piece that represents a Cannon. Cannon's have a different data structure
-    for possible moves - instead of a dict with a key as a vector and a value of move sequences,
-    Chariots have a tuple that holds a range of tuples.
+    Same as Parent version of get_possible_moves() but overridden for documentation purposes
+    to identify different type being returned.
+    :return: tuple of tuples
     """
     def __init__(self, player, label):
         super().__init__(player, label)
@@ -1365,56 +1551,72 @@ class Position:
 
         If the (x,y) coordinate associated with the Position is found in the data structure in either of the two static
         methods, this method returns True. Otherwise, returns False.
+
+        :return: bool
         """
+
         if self._is_red_palace_position is True or self._is_blue_palace_position is True:
             return True
         else:
             return False
 
     def check_if_red_palace(self) -> bool:
-        """ Returns True if Position is a red palace position """
+        """
+        Returns True if Position is a red palace position
+        :return:
+        """
         if self._is_red_palace_position is True:
             return True
         else:
             return False
 
     def check_if_blue_palace(self) -> bool:
-        """ Returns True if Position is a blue palace position """
+        """
+        Returns True if Position is a blue palace position
+        :return: bool
+        """
         if self._is_blue_palace_position is True:
             return True
         else:
             return False
 
-    def get_current_piece(self) -> Piece:
+    def get_current_piece(self) -> Piece or None:
         """
         Returns the current Piece object assigned to the position. If the position does not have a piece, this method
         returns None.
+        :return: Object.Piece or None
         """
         return self._current_piece
 
     def get_position_location(self) -> tuple:
         """
         Returns the (x,y) location of the position.
+        :return: tuple
         """
         return self._xy_pos
 
-    def assign_piece_to_empty_position(self, piece: Piece):
+    def assign_piece_to_empty_position(self, piece: Piece) -> None:
         """
         Assigns a Piece object to an empty position. Assumes that the removal of hte piece Object is valid, based
         on the validation performed in the validate_ methods of Object.Board
+        :param piece: Object.Piece
+        :return: None
         """
         self._current_piece = piece
 
-    def remove_piece_from_position(self):
+    def remove_piece_from_position(self) -> None:
         """
         Removes a Piece object from the Position. Assumes that the removal of the Piece object is valid, based on
         the validation performed in the validate_ methods in Object.Board
+        :return: None
         """
         self._current_piece = None
 
 
 class JanggiDisplay:
-
+    """
+    Represents a Display object for displaying the CLI interface of the JanggiBoard
+    """
     def __init__(self):
 
         self.line1 = "             aa  bb  cc  dd  ee  ff  gg  hh  ii   %s : %s  "
@@ -1446,7 +1648,12 @@ class JanggiDisplay:
                            self.line13, self.line14, self.line15, self.line16, self.line17, self.line18,
                            self.line19, self.line20, self.line21, self.line22, self.line23]
 
-    def draw(self, current_board):
+    def draw(self, current_board: list) -> None:
+        """
+        Draws the game board.
+        :param current_board: list of tuples
+        :return: None
+        """
         print()
         i = 0
         for row in self.board_rows:
