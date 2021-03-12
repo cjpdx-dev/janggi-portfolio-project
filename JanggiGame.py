@@ -62,18 +62,18 @@ class JanggiGame:
 
         if next_move is not None:
 
-            can_complete_move = False
+            can_complete_move = True
 
-            # make sure player moved themselves out of check
-            if self._current_player.is_in_check() is True:
-                if self.detect_out_of_check(self._current_player, next_move) is False:
-                    self._current_player.set_check_status(False)
-                    can_complete_move = True
-
-            # make sure player didn't put themselves in check
-            if self._current_player.is_in_check() is False:
-                if self.detect_out_of_check(self._current_player, next_move) is False:
-                    can_complete_move = True
+            # # make sure player moved themselves out of check
+            # if self._current_player.is_in_check() is True:
+            #     if self.detect_out_of_check(self._current_player, next_move) is False:
+            #         self._current_player.set_check_status(False)
+            #         can_complete_move = True
+            #
+            # # make sure player didn't put themselves in check
+            # if self._current_player.is_in_check() is False:
+            #     if self.detect_out_of_check(self._current_player, next_move) is False:
+            #         can_complete_move = True
 
             if can_complete_move is True:
                 self._game_board.complete_move(next_move)
