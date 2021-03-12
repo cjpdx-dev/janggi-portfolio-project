@@ -495,7 +495,7 @@ class Board:
                 is_capture = True
 
         if current_pos.check_if_palace_position() is True:
-            if self.check_palace_piece_movement(current_pos, new_pos) is False:
+            if self.check_palace_piece_movement(current_pos, new_pos, is_capture) is False:
                 return None
             else:
                 return Move(current_pos, new_pos, is_capture)
@@ -536,7 +536,7 @@ class Board:
             else:
                 return True
 
-    def check_palace_piece_movement(self, current_pos, new_pos):
+    def check_palace_piece_movement(self, current_pos, new_pos, is_capture):
         """
         Checks the movement rules for a piece currently within the palace that is attempting to move within or move
         outside the palace. Returns True if the movement is valid based on Palace movement
@@ -589,7 +589,7 @@ class Board:
                         return False
 
             elif piece_label == "ca":
-                if self.check_cannon_movement_inside_palace(current_pos, new_pos) is True:
+                if self.check_cannon_movement_inside_palace(current_pos, new_pos, is_capture) is True:
                     return True
                 else:
                     return False
@@ -602,9 +602,6 @@ class Board:
 
             else:
                 return self.check_non_palace_piece_movement(current_pos, new_pos)
-
-        # else:
-        #     return self.check_non_palace_piece_movement(current_pos, new_pos)
 
         print("Reached the end of check_palace_piece_movement() with no return. Returning False")
         return False
@@ -740,7 +737,6 @@ class Board:
 
     @staticmethod
     def check_chariot_movement_outside_palace(current_pos, new_pos):
-        print("Checking chariot movement outside palace")
         current_pos: Position = current_pos
         current_xy = current_pos.get_position_location()
 
@@ -784,7 +780,58 @@ class Board:
         pass
 
     def check_cannon_movement_outside_palace(self, current_pos, new_pos, is_capture):
-        pass
+
+        current_pos: Position = current_pos
+        current_xy = current_pos.get_position_location()
+
+        current_piece: Piece = current_pos.get_current_piece()
+        piece_movement_rules = current_piece.get_possible_moves()
+
+        new_pos: Position = new_pos
+        new_xy = new_pos.get_position_location()
+
+        if is_capture:
+            piece_being_captured = new_pos.get_current_piece()
+            if piece_being_captured.get_label() == "ca":
+                print("Move failed: Cannons cannot capture other cannons.")
+                return False
+
+        delta_x = new_xy[0] - current_xy[0]
+        delta_y = new_xy[1] - current_xy[1]
+        delta_xy = (delta_x, delta_y)
+
+        move_is_diagonal = Board.check_if_move_is_diagonal(delta_x, delta_y)
+        if move_is_diagonal:
+            print("Move failed: Cannon cannot move diagonally when outside of the Palace.")
+            return False
+
+        valid_delta = False
+        for movement_direction in piece_movement_rules:
+
+            if movement_direction[0] == 0:
+                for y in movement_direction[1]:
+                    if (movement_direction[0], y) == delta_xy:
+                        valid_delta = True
+
+            if movement_direction[1] == 0:
+                for x in movement_direction[0]:
+                    if (x, movement_direction[1]) == delta_xy:
+                        valid_delta = True
+
+        if valid_delta is False:
+            print("Move failed: move was not possible based on Cannon's movement rules.")
+            return False
+        else:
+            # check for piece orthogonal to cannon in direction of its movement
+            next_position_xy = (current_xy[0] + delta_x, current_xy[1] + delta_y)
+            next_position: Position = self.get_position(next_position_xy)
+            piece_at_next_position = next_position.get_current_piece()
+
+            if piece_at_next_position is None:
+                print("Move failed: Cannon did not have another piece orthogonal to it in the direction of its move.")
+                return False
+            else:
+                return True
 
     def check_soldier_movement_inside_palace(self, current_pos, new_pos):
         current_pos: Position = current_pos
@@ -798,6 +845,7 @@ class Board:
         delta_xy = (delta_x, delta_y)
 
         move_is_diagonal = self.check_if_move_is_diagonal(delta_x, delta_y)
+
         delta_xy_div_abs = None
         if move_is_diagonal is True:
             delta_xy_div_abs = self.get_delta_xy_div_abs_xy(delta_x, delta_y)
