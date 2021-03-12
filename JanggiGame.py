@@ -601,10 +601,10 @@ class Board:
                     return False
 
             else:
-                pass
+                return self.check_non_palace_piece_movement(current_pos, new_pos)
 
-        else:
-            self.check_non_palace_piece_movement(current_pos, new_pos)
+        # else:
+        #     return self.check_non_palace_piece_movement(current_pos, new_pos)
 
         print("Reached the end of check_palace_piece_movement() with no return. Returning False")
         return False
