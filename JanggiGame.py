@@ -66,7 +66,7 @@ class JanggiGame:
             # set _current_player.set_in_check() to False (if necessary)
             # complete the move
             if self._current_player.is_in_check() is True:
-                if self._game_board.detect_check(self._current_player) is False:
+                if self.detect_check(self._current_player) is False:
                     pass
                 # make sure move gets them out of check
             if self._current_player.is_in_check() is False:
@@ -154,9 +154,37 @@ class JanggiGame:
         This method determines if the game state has changed by calling _is_in_check. If is_in_check
         returns true, then we call look_for_checkmate
         """
+
+        if self.detect_check(self._current_player) is True:
+            self._current_player.set_check_status(True)
+
         self.switch_turns()
-        if self._game_board.detect_check(self._current_player) is True:
-            pass
+
+    def detect_check(self, player_to_detect):
+
+        if player_to_detect == self._player_1:
+            player_to_scan = self._player_2
+        elif player_to_detect == self._player_2:
+            player_to_scan = self._player_1
+        else:
+            print("Player's were incorrectly initialized. Returning False.")
+            return False
+
+        position_of_general = self._game_board.find_position_of_general(player_to_detect)
+        gen_position_xy = position_of_general.get_position_location()
+
+        opposing_player_positions = self._game_board.find_all_opposing_positions(player_to_scan)
+
+        for opposing_position in opposing_player_positions:
+            opposing_location = opposing_position.get_position_location()
+            opposing_location_to_player_general = (opposing_location, gen_position_xy)
+
+            if self._game_board.validate_move_rules(opposing_location_to_player_general) is not None:
+                print("Check scenario found: ", player_to_detect.get_player_color(), " in check!")
+                return True
+            else:
+                print("Check scenario not found.")
+                return False
 
     def is_in_check(self, player_color: str) -> bool:
         """
@@ -169,6 +197,9 @@ class JanggiGame:
             return self._player_2.is_in_check()
         else:
             print("ERROR: Invalid player color was passed to function JanggiGame.is_in_check()")
+
+    def detect_checkmate(self, player_to_scan):
+        pass
 
     def set_game_state(self, game_state: str):
         """
@@ -717,7 +748,6 @@ class Board:
                     temp_xy = (int(temp_xy[0] + delta_xy_div_abs[0]),
                                int(temp_xy[1] + delta_xy_div_abs[1]))
 
-
                 return True
 
             else:
@@ -878,11 +908,51 @@ class Board:
             else:
                 return False
 
-    def detect_check(self, player: Player):
-        pass
+    def find_position_of_general(self, player):
 
-    def detect_checkmate(self, player: Player):
-        pass
+        # TODO: there's a better way to do this - have a field in Player that updates the position
+        # of the general each time the player moves the general. Don't have time to implement
+        # that right now so we are just brute forcing it here.
+
+        for position_xy in self._board:
+            current_position: Position = self.get_position(position_xy)
+            current_piece = current_position.get_current_piece()
+
+            if current_piece is None:
+                continue
+
+            if current_piece.get_player() is not player:
+                continue
+
+            if current_piece.get_player() is player:
+                if current_piece.get_label() != "ge":
+                    continue
+                else:
+                    return current_position
+
+            print("ERROR: Player's general could not be found on game board. Returning None")
+            return None
+
+    def find_all_opposing_positions(self, opposing_player) -> list:
+        """
+
+        :param opposing_player:
+        :return:
+        """
+        opposing_positions = []
+        for position in self._board:
+            current_position: Position = self.get_position(position)
+
+            if current_position.get_current_piece() is not None:
+                current_piece = current_position.get_current_piece()
+                if current_piece.get_player() == opposing_player:
+                    opposing_positions.append(current_position)
+                else:
+                    continue
+            else:
+                continue
+
+        return opposing_positions
 
     @staticmethod
     def complete_move(next_move: Move):
@@ -919,7 +989,6 @@ class Board:
                 return False
         else:
             return False
-
 
     @staticmethod
     def get_red_palace_move_rules() -> dict:

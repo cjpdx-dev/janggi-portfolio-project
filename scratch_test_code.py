@@ -6,6 +6,24 @@ from JanggiGame import Chariot
 
 game: JanggiGame = JanggiGame()
 game.display_board()
+gameboard = game.get_game_board()
+player1 = game.get_current_player()
+player2 = game.get_next_player()
+
+gen_position = gameboard.find_position_of_general(player1)
+print(gen_position.get_position_location())
+
+opposing_positions = gameboard.find_all_opposing_positions(player2)
+for position in opposing_positions:
+    print(position.get_position_location())
+
+game.detect_check(player1)
+
+
+
+
+
+
 # # game.make_move("c10", "d8")
 # # game.display_board()
 # # game.make_move("a4", "a5")
@@ -60,33 +78,33 @@ game.display_board()
 # game.display_board()
 # game.make_move("h10", "f9")
 # game.display_board()
-
-game.make_move("c7", "c6")
-game.display_board()
-game.make_move("a4", "a5")
-game.display_board()
-game.make_move("a7", "b7")
-game.display_board()
-game.make_move("a5", "a6")
-game.display_board()
-game.make_move("b8", "b6")
-game.display_board()
-game.make_move("a6", "a7")
-game.display_board()
-game.make_move("b6", "b6")
-game.display_board()
-game.make_move("c4", "b4")
-game.display_board()
-game.make_move("c6", "c5")
-game.display_board()
-game.make_move("b4", "b4")
-game.display_board()
-game.make_move("c5", "b5")
-game.display_board()
-game.make_move("b4", "b4")
-game.display_board()
-game.make_move("b6", "b4")
-game.display_board()
+#
+# game.make_move("c7", "c6")
+# game.display_board()
+# game.make_move("a4", "a5")
+# game.display_board()
+# game.make_move("a7", "b7")
+# game.display_board()
+# game.make_move("a5", "a6")
+# game.display_board()
+# game.make_move("b8", "b6")
+# game.display_board()
+# game.make_move("a6", "a7")
+# game.display_board()
+# game.make_move("b6", "b6")
+# game.display_board()
+# game.make_move("c4", "b4")
+# game.display_board()
+# game.make_move("c6", "c5")
+# game.display_board()
+# game.make_move("b4", "b4")
+# game.display_board()
+# game.make_move("c5", "b5")
+# game.display_board()
+# game.make_move("b4", "b4")
+# game.display_board()
+# game.make_move("b6", "b4")
+# game.display_board()
 
 
 
