@@ -1352,6 +1352,7 @@ class Board:
             print("ERROR: delta_xy_div_abs_xy handled a non-diagonal move")
             return None
 
+
 class Piece:
     """
     The Piece class represents a piece object - in practice all Piece objects will exist as
